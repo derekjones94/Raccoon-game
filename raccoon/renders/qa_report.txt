@@ -1,0 +1,60 @@
+== chr_raccoon
+bones/parents identical to chr_raccoon: True
+largest rest-direction differences vs raccoon (deg): [('wrist.r', 0), ('wrist.l', 0), ('upperleg.r', 0), ('upperleg.l', 0), ('upperarm.r', 0), ('upperarm.l', 0)]
+A-pose: upper arm 49 deg out from straight down
+hand slots weighted: no
+handslot.l +Y in the game look: (-0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+handslot.r +Y in the game look: (0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+idle   OK    limb into body  0.8 mm (arm_R @ 6, near upperarm.r joint, z 0.219) | under the floor (mm): none
+walk   OK    limb into body  5.2 mm (thigh_R @ 8, near upperleg.r joint, z 0.102) | under the floor (mm): none
+carry  CHECK limb into body 12.5 mm (arm_R @ 4, near upperarm.r joint, z 0.207) | under the floor (mm): none
+work   OK    limb into body  9.1 mm (arm_R @ 16, near upperarm.r joint, z 0.206 = joint crease, ok) | under the floor (mm): none
+sneak  OK    limb into body  5.4 mm (arm_L @ 24, near upperarm.l joint, z 0.206) | under the floor (mm): none
+sleep  OK    limb into body 10.2 mm (arm_L @ 18, near upperarm.l joint, z 0.170 = joint crease, ok) | under the floor (mm): none
+ISSUES FOUND
+
+== chr_raccoon_kit
+bones/parents identical to chr_raccoon: True
+largest rest-direction differences vs raccoon (deg): [('wrist.r', 0), ('wrist.l', 0), ('upperleg.r', 0), ('upperleg.l', 0), ('upperarm.r', 0), ('upperarm.l', 0)]
+A-pose: upper arm 49 deg out from straight down
+hand slots weighted: no
+handslot.l +Y in the game look: (-0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+handslot.r +Y in the game look: (0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+idle   OK    limb into body  2.4 mm (tail @ 8, near tail_3 joint, z 0.153) | under the floor (mm): none
+walk   OK    limb into body  3.1 mm (thigh_R @ 8, near upperleg.r joint, z 0.061) | under the floor (mm): none
+carry  OK    limb into body  9.6 mm (arm_L @ 18, near upperarm.l joint, z 0.144 = joint crease, ok) | under the floor (mm): none
+work   OK    limb into body  4.5 mm (arm_L @ 0, near upperarm.l joint, z 0.120) | under the floor (mm): none
+sneak  OK    limb into body  2.7 mm (arm_L @ 8, near upperarm.l joint, z 0.130) | under the floor (mm): none
+sleep  OK    limb into body  6.7 mm (arm_L @ 18, near upperarm.l joint, z 0.090 = joint crease, ok) | under the floor (mm): none
+ALL CLEAN
+
+== chr_raccoon_elder
+bones/parents identical to chr_raccoon: True
+largest rest-direction differences vs raccoon (deg): [('spine', 26), ('chest', 26), ('head', 26), ('handslot.r', 26), ('handslot.l', 26), ('hand.r', 26)]
+A-pose: upper arm 48 deg out from straight down
+hand slots weighted: no
+handslot.l +Y in the game look: (-0.0, -0.9, -0.44)  (forward = (0, -1, 0))
+handslot.r +Y in the game look: (0.0, -0.9, -0.44)  (forward = (0, -1, 0))
+idle   OK    limb into body  3.2 mm (arm_R @ 38, near upperarm.r joint, z 0.205) | under the floor (mm): none
+walk   OK    limb into body  6.5 mm (thigh_L @ 16, near upperleg.l joint, z 0.119 = joint crease, ok) | under the floor (mm): none
+carry  OK    limb into body  9.7 mm (arm_L @ 14, near upperarm.l joint, z 0.170 = joint crease, ok) | under the floor (mm): none
+work   OK    limb into body 10.0 mm (arm_R @ 16, near upperarm.r joint, z 0.168 = joint crease, ok) | under the floor (mm): none
+sneak  OK    limb into body  5.6 mm (thigh_R @ 16, near upperleg.r joint, z 0.062) | under the floor (mm): none
+sleep  CHECK limb into body 14.9 mm (arm_L @ 18, near upperarm.l joint, z 0.158) | under the floor (mm): none
+ISSUES FOUND
+
+== chr_weasel
+bones/parents identical to chr_raccoon: True
+largest rest-direction differences vs raccoon (deg): [('tail_5', 101), ('tail_1', 88), ('tail_4', 66), ('tail_2', 60), ('lowerleg.r', 14), ('lowerleg.l', 14)]
+A-pose: upper arm 54 deg out from straight down
+hand slots weighted: no
+handslot.l +Y in the game look: (0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+handslot.r +Y in the game look: (-0.0, -1.0, -0.0)  (forward = (0, -1, 0))
+idle   OK    limb into body  0.5 mm (arm_R @ 8, near upperarm.r joint, z 0.288) | under the floor (mm): none
+walk   OK    limb into body  3.0 mm (arm_L @ 14, near upperarm.l joint, z 0.294) | under the floor (mm): none
+carry  OK    limb into body 11.7 mm (arm_R @ 0, near upperarm.r joint, z 0.267 = joint crease, ok) | under the floor (mm): none
+work   OK    limb into body  7.1 mm (arm_R @ 16, near upperarm.r joint, z 0.270 = joint crease, ok) | under the floor (mm): none
+sneak  OK    limb into body  5.7 mm (arm_R @ 8, near upperarm.r joint, z 0.253) | under the floor (mm): none
+sleep  OK    limb into body 10.7 mm (arm_R @ 0, near upperarm.r joint, z 0.206 = joint crease, ok) | under the floor (mm): none
+ALL CLEAN
+

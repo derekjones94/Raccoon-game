@@ -1,0 +1,28 @@
+asset                       tris   placed
+--------------------------------------------
+chr_raccoon                  2732   x4
+chr_raccoon_kit              2732   x2
+chr_raccoon_elder            2764   x1
+kit_floor_stone                48   x6
+kit_wall_stone                 60   x3
+kit_wall_stone_door           152   x1
+kit_wall_stone_corner         108   x2
+kit_ramp_stone                 72   x1
+kit_stairs_stone               52   x1
+kit_scaffold_wood             228   x1
+kit_ladder_wood               240   x1
+bld_den_2x2                   444   x1
+bld_stockpile_2x2             660   x1
+bld_rummage_camp_2x2          492   x1
+bld_woodpile_1x1              340   x1
+bld_washing_pool_2x1          276   x1
+bld_tinker_bench_1x1          308   x1
+bld_guild_hall_3x3            520   x1
+prop_goldpile                 288   x1
+prop_gemchest                 146   x1
+prop_torch                     93   x2
+prop_barrel                   168   x1
+prop_crate                    152   x2
+prop_mushrooms                277   x2
+--------------------------------------------
+scene total (all placed)    25270
