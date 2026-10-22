@@ -1,18 +1,25 @@
 """chr_dragon: a huge red dragon asleep, curled round its hoard. 6 x 4 cells, 2 cells tall.
 
 Modelled in the sleeping pose (that's the rest pose). The body is one lofted tube along a curl path (neck -> torso ->
-tail); head, horns, legs, folded wings and the spine ridge are separate volumes. The hoard is its own static mesh in
+tail) whose neck end runs into the cranium, so head and neck read as one piece; head, horns, legs, folded wings, the
+spine ridge and the spade on the tail tip are separate volumes. The flanks, head and legs carry the dragon_scales
+pattern tile and the belly the dragon_belly plates (UVs spread over the palette cell, see palette.py); the back stripe,
+brows, paws and spikes stay flat swatches. The wings are laid out in body-surface coordinates (WING: arc s, angle round
+the body, height over the scales) and fold flat against the flanks: arm, three finger bones, scalloped membrane. The hoard is its own static mesh in
 the same .glb (chr_dragon_hoard) so the game can swap / shrink it as raccoons steal from it.
 Front (-Y in Blender = +Z in Godot) is where the head rests.
 
-Rig: root, spine, chest, hips, neck_3/2/1, head, jaw, eyelid_L/R, tail_1..6, wing_L/R, fore_L/R, hind_L/R.
+Rig: root, spine, chest, hips, neck_3/2/1, head, jaw, eyelid_L/R, tail_1..6, wing_L/R, fore_L/R, hind_L/R, and
+breath_chest / breath_spine / breath_hips: leaf copies of those three that hold the body skin there and do the breathing
+swell (scale across the bone), so the swell never passes down to the neck, tail, legs or wings.
 Body skin follows distance ALONG the body (not straight-line distance), so the tail tip lying next to the snout never
 gets pulled by the head.
 Actions (24 fps): idle (4 s breathing loop), stir (6 s one-shot: inhale, neck lifts, eyes open, look round, snort,
 eyes close, settle -- starts and ends on the rest pose so it blends back into idle).
 
 Run:  python3 tools/build_dragon.py
-Out:  chr_dragon.blend, export/chr_dragon.glb, renders/dragon_*.png/gif
+Out:  chr_dragon.blend, export/chr_dragon.glb, renders/dragon_*.png/gif (dragon_anims.gif = idle then stir)
+      --no-renders skips the renders
 """
 import math
 import random
@@ -37,10 +44,10 @@ FPS = 24
 GROUPS = ["body", "head", "jaw", "eyelid_L", "eyelid_R", "wing_L", "wing_R", "fore_L", "fore_R", "hind_L", "hind_R"]
 
 # curl path from the back of the head (s = 0) to the tail tip (s = 1): x, y, z(centre), radius
-PATH = [(-0.95, -1.15, 0.36, 0.30), (-1.75, -1.05, 0.40, 0.36), (-2.33, -0.45, 0.46, 0.42), (-2.28, 0.45, 0.54, 0.52),
+PATH = [(-0.60, -1.21, 0.31, 0.15), (-0.98, -1.15, 0.34, 0.25), (-1.75, -1.05, 0.40, 0.36), (-2.33, -0.45, 0.46, 0.42), (-2.28, 0.45, 0.54, 0.52),
         (-1.60, 1.04, 0.62, 0.62), (-0.40, 1.20, 0.66, 0.66), (0.85, 1.10, 0.62, 0.62), (1.95, 0.60, 0.48, 0.46),
-        (2.43, -0.30, 0.35, 0.34), (2.05, -1.22, 0.26, 0.25), (1.05, -1.60, 0.19, 0.18), (0.20, -1.66, 0.13, 0.12),
-        (-0.25, -1.56, 0.08, 0.05)]
+        (2.43, -0.30, 0.35, 0.34), (2.05, -1.22, 0.26, 0.25), (1.05, -1.60, 0.19, 0.18), (0.20, -1.70, 0.13, 0.12),
+        (-0.22, -1.68, 0.08, 0.05)]
 S_BONES = [  # body chain bones by arc position along the path (s), parents first
     ("spine", 0.42, 0.55, "root"), ("chest", 0.42, 0.30, "spine"), ("hips", 0.55, 0.66, "spine"),
     ("neck_3", 0.30, 0.20, "chest"), ("neck_2", 0.20, 0.10, "neck_3"), ("neck_1", 0.10, 0.0, "neck_2"),
@@ -90,17 +97,26 @@ class Path3:
 
 
 class DM(B.M):
-    """Building mesh helpers + per-face body-part group + per-vertex body position s."""
+    """Building mesh helpers + per-face body-part group + per-vertex body position s and height h over the body
+    (wings) + pattern UVs: with `scaly` on, red faces get the scale tile spread over them instead of a flat swatch."""
 
     def __init__(self):
         super().__init__()
         self.grp = self.bm.faces.layers.int.new("grp")
+        self.tiled = self.bm.faces.layers.int.new("tiled")
         self.sv = self.bm.verts.layers.float.new("s")
-        self.cur, self.cur_s = 0, 0.0
+        self.hv = self.bm.verts.layers.float.new("h")
+        self.uv = self.bm.loops.layers.uv.new("UVMap")
+        self.cur, self.cur_s, self.scaly = 0, 0.0, False
 
     def part(self, name, s=0.0):
         self.cur, self.cur_s = GROUPS.index(name), s
         return self
+
+    def tile(self, f, name, corners):
+        f[self.sw], f[self.tiled] = B.NAMES.index(name), 1
+        for lp, (tu, tv) in zip(f.loops, corners):
+            lp[self.uv].uv = P.tile_uv(name, tu, tv)
 
     def tag(self, faces, swatch):
         super().tag(faces, swatch)
@@ -108,6 +124,14 @@ class DM(B.M):
             f[self.grp] = self.cur
             for v in f.verts:
                 v[self.sv] = self.cur_s
+            if self.scaly and swatch == "dragon_red":
+                n = len(f.verts)
+                self.tile(f, "dragon_scales", QUAD if n == 4 else TRI if n == 3 else
+                          [(0.5 + 0.5 * math.cos(2 * math.pi * k / n), 0.5 + 0.5 * math.sin(2 * math.pi * k / n)) for k in range(n)])
+
+
+QUAD = [(0, 0), (1, 0), (1, 1), (0, 1)]
+TRI = [(0, 1), (1, 1), (0.5, 0)]
 
 
 def oriented_blob(m, c, r, fwd, swatch, segs=10, rings=6, pitch=0.0):
@@ -126,15 +150,70 @@ def horn(m, base, d, r, length, swatch="bone", segs=6):
     m.tag({f for v in res["verts"] for f in v.link_faces}, swatch)
 
 
+def strut(m, pts, r0, r1, swatch, sides=6, hs=None, ss_=None, point=False):
+    """A round tube along a polyline, tapering r0 -> r1 (bones of the wings, the legs). Optional per-point h / s
+    values for the skin; point=True closes the far end in a claw tip."""
+    rings, prev = [], None
+    for i, p in enumerate(pts):
+        t = (pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized()
+        n0 = prev if prev is not None else (t.orthogonal().normalized())
+        n0 = (n0 - t * n0.dot(t)).normalized()
+        prev, b = n0, t.cross(n0)
+        r = r0 + (r1 - r0) * i / (len(pts) - 1)
+        ring = [m.bm.verts.new(p + (n0 * math.cos(2 * math.pi * k / sides) + b * math.sin(2 * math.pi * k / sides)) * r)
+                for k in range(sides)]
+        for v in ring:
+            v[m.sv] = ss_[i] if ss_ else m.cur_s
+            v[m.hv] = hs[i] if hs else 0.0
+        rings.append(ring)
+    faces = []
+    for a, c in zip(rings, rings[1:]):
+        for k in range(sides):
+            j = (k + 1) % sides
+            faces.append(m.bm.faces.new((a[k], a[j], c[j], c[k])))
+    faces.append(m.bm.faces.new(list(reversed(rings[0]))))
+    if point:
+        tip = m.bm.verts.new(pts[-1] + (pts[-1] - pts[-2]).normalized() * r1 * 2.5)
+        tip[m.sv], tip[m.hv] = rings[-1][0][m.sv], rings[-1][0][m.hv]
+        for k in range(sides):
+            faces.append(m.bm.faces.new((rings[-1][k], rings[-1][(k + 1) % sides], tip)))
+    else:
+        faces.append(m.bm.faces.new(rings[-1]))
+    keep = {v: v[m.sv] for f in faces for v in f.verts}
+    m.tag(faces, swatch)
+    for v, val in keep.items():                        # tag() overwrote s with cur_s: put the per-point values back
+        v[m.sv] = val
+    return faces
+
+
 # ---------------------------------------------------------------- dragon mesh
 HEAD_C = V((-0.52, -1.22, 0.30))
 HEAD_F = V((1.0, -0.12, 0.0)).normalized()                    # heading of the snout (toward the hoard / front right)
 HEAD_SIDE = V((0, 0, 1)).cross(HEAD_F).normalized()            # head's left
+HS = 1.15                                                       # head scale: built at 1, grown about HEAD_C
+
+
+def hp(p):
+    """A point of the head (as written at scale 1) to where it ends up after the head is scaled up."""
+    return HEAD_C + (V(p) - HEAD_C) * HS
+
+
+def surf(path, s, th, h, sg):
+    """A point on (h = 0) or above the body surface: arc s, angle th (degrees) from straight out on side sg (+1 right
+    of the direction of travel, -1 left) up toward the spine. Matches the body tube's elliptical rings."""
+    p, r, tan, side, up = path.at(s)
+    a = math.radians(th)
+    return p + side * sg * math.cos(a) * (r + h) + up * math.sin(a) * (r * 0.86 + h)
+
+
+# folded wing, in body-surface coordinates (s, angle, height over the scales)
+WING = {"SH": (0.34, 42, -0.03), "EL": (0.39, 53, 0.21), "WR": (0.45, 46, 0.15),
+        "F1": (0.60, 40, 0.04), "F2": (0.58, 24, 0.04), "F3": (0.53, 9, 0.04), "A": (0.415, 11, 0.02)}
 
 
 def build_dragon(coll, path):
     m = DM()
-    # ---- body tube: elliptical rings, darker back stripe, pale belly plates underneath / on the inner side
+    # ---- body tube: elliptical rings; scaled flanks, darker back stripe, belly plates underneath
     segs = 12
     rings = []
     for i, (p, r) in enumerate(path.samples):
@@ -155,17 +234,27 @@ def build_dragon(coll, path):
             (a, ua), (b, ub) = rings[i][k], rings[i][j]
             c, d = rings[i + 1][j][0], rings[i + 1][k][0]
             f = m.bm.faces.new((a, b, c, d))
-            u = (ua + ub) / 2
-            sw = "dragon_dark" if u > 0.8 else ("bone" if u < -0.45 else "dragon_red")
-            f[m.sw] = B.NAMES.index(sw)
             f[m.grp] = 0
+            u = (ua + ub) / 2
+            if u > 0.8:
+                f[m.sw] = B.NAMES.index("dragon_dark")
+            else:
+                m.tile(f, "dragon_belly" if u < -0.45 else "dragon_scales", QUAD)
     f = m.bm.faces.new([v for v, _ in reversed(rings[-1])])          # tail tip cap
     f[m.sw], f[m.grp] = B.NAMES.index("dragon_dark"), 0
     f = m.bm.faces.new([v for v, _ in rings[0]])                     # neck end (inside the head)
     f[m.sw], f[m.grp] = B.NAMES.index("dragon_red"), 0
-    # ---- spine ridge: spikes from the neck to the end of the tail, shrinking toward both ends
+    # ---- spade on the tail tip (an arrowhead flattened across the tail), so the tail ends in a point, not a cut
+    p, r, tan, side, up = path.at(1.0)
+    m.part("body", 1.0)
+    k0 = len(m.bm.verts)
+    horn(m, p - tan * 0.04, tan, r * 3.2, 0.3, "dragon_dark", 4)
+    m.bm.verts.ensure_lookup_table()
+    flat = Matrix.Translation(p) @ Matrix.Scale(0.35, 4, up) @ Matrix.Translation(-p)
+    bmesh.ops.transform(m.bm, matrix=flat, verts=m.bm.verts[k0:])
+    # ---- spine ridge: spikes from behind the head to the end of the tail, shrinking toward both ends
     k = 0
-    s = 0.04
+    s = 0.06
     while s < 0.93:
         p, r, tan, side, up = path.at(s)
         size = r * (0.55 if 0.25 < s < 0.7 else 0.45)
@@ -173,11 +262,14 @@ def build_dragon(coll, path):
         horn(m, p + up * r * 0.78, up * 0.85 - tan * 0.5, size * 0.4, size, "dragon_dark" if k % 2 else "dragon_light", 4)
         s += 0.035 + 0.02 * (r < 0.3)
         k += 1
-    # ---- head (resting on the floor, eyes shut)
+    # ---- head (resting on the floor, eyes shut); built at scale 1 round HEAD_C, then grown by HS
+    head_v0 = len(m.bm.verts)
     c, f, sd = HEAD_C, HEAD_F, HEAD_SIDE
     m.part("head", 0.0)
+    m.scaly = True
     oriented_blob(m, c, V((0.36, 0.3, 0.25)), f, "dragon_red", 12, 7)                              # cranium
     oriented_blob(m, c + f * 0.42 + V((0, 0, -0.03)), V((0.38, 0.22, 0.16)), f, "dragon_red", 12, 6, pitch=0.08)  # snout
+    m.scaly = False
     oriented_blob(m, c + f * 0.42 + V((0, 0, 0.09)), V((0.3, 0.12, 0.06)), f, "dragon_dark", 8, 4)   # snout ridge
     for sx in (1, -1):
         oriented_blob(m, c + f * 0.74 + sd * sx * 0.08 + V((0, 0, 0.06)), V((0.035, 0.03, 0.025)), f, "dragon_dark", 6, 3)  # nostrils
@@ -186,22 +278,31 @@ def build_dragon(coll, path):
         horn(m, c - f * 0.05 + sd * sx * 0.27 + V((0, 0, -0.02)), -f * 0.7 + sd * sx * 0.6, 0.06, 0.26, "dragon_dark", 4)  # cheek frills
         oriented_blob(m, c + f * 0.12 + sd * sx * 0.245 + V((0, 0, 0.07)), V((0.07, 0.04, 0.06)), f, "flame_yellow", 8, 4)  # eye (glows)
         m.part("eyelid_L" if sx > 0 else "eyelid_R", 0.0)
+        m.scaly = True
         oriented_blob(m, c + f * 0.12 + sd * sx * 0.255 + V((0, 0, 0.075)), V((0.085, 0.05, 0.075)), f, "dragon_red", 8, 5)  # shut lid
+        m.scaly = False
         m.part("head", 0.0)
     for t in (0.55, 0.68):                                                                          # teeth peeking out
         for sx in (1, -1):
             horn(m, c + f * t + sd * sx * 0.17 + V((0, 0, -0.1)), V((0, 0, -1)), 0.022, 0.06, "bone", 4)
     m.part("jaw", 0.0)
     oriented_blob(m, c + f * 0.36 + V((0, 0, -0.15)), V((0.38, 0.2, 0.08)), f, "dragon_light", 10, 5, pitch=0.05)  # jaw
-    # ---- legs: thigh + paw + claws, tucked along the body
+    m.bm.verts.ensure_lookup_table()
+    bmesh.ops.transform(m.bm, matrix=Matrix.Translation(c) @ Matrix.Scale(HS, 4) @ Matrix.Translation(-c),
+                        verts=m.bm.verts[head_v0:])
+    # ---- legs: thigh blended into the flank, a foreleg down to the paw, claws
     def leg(name, s, side_sign, fwd_sign, size):
         p, r, tan, side, up = path.at(s)
         m.part(name, s)
+        m.scaly = True
         out = side * side_sign
-        thigh = p + out * r * 0.65 + V((0, 0, -r * 0.25))
-        oriented_blob(m, thigh, V((size * 0.5, size * 0.36, size * 0.42)), tan, "dragon_red", 10, 6)
-        paw = V((thigh.x, thigh.y, 0)) + out * size * 0.25 + tan * fwd_sign * size * 0.45 + V((0, 0, size * 0.12))
-        oriented_blob(m, paw, V((size * 0.32, size * 0.22, size * 0.13)), tan * fwd_sign, "dragon_dark", 8, 5)
+        thigh = p + out * r * 0.72 + V((0, 0, -r * 0.2))
+        oriented_blob(m, thigh, V((size * 0.6, size * 0.42, size * 0.5)), tan, "dragon_red", 10, 6)
+        paw = V((thigh.x, thigh.y, 0)) + out * size * 0.22 + tan * fwd_sign * size * 0.4 + V((0, 0, size * 0.12))
+        knee = thigh.lerp(paw, 0.5) + out * size * 0.1
+        strut(m, [thigh + out * size * 0.1, knee, paw + V((0, 0, size * 0.06))], size * 0.27, size * 0.2, "dragon_red", 8)
+        m.scaly = False
+        oriented_blob(m, paw, V((size * 0.32, size * 0.24, size * 0.14)), tan * fwd_sign, "dragon_dark", 8, 5)
         for cl in (-1, 0, 1):
             cb = paw + tan * fwd_sign * size * 0.28 + out.cross(V((0, 0, 1))).normalized() * cl * size * 0.12
             horn(m, cb, tan * fwd_sign + V((0, 0, -0.35)), size * 0.05, size * 0.16, "bone", 4)
@@ -209,43 +310,87 @@ def build_dragon(coll, path):
     leg("fore_R", 0.36, 1, -1, 0.55)        # inner side
     leg("hind_L", 0.6, -1, 1, 0.7)
     leg("hind_R", 0.6, 1, 1, 0.62)
-    # ---- folded wings on the back: a bony arm + membrane panel per side, both sides of the panel faced
-    def wing(name, side_sign):
-        p0, r0, tan0, side0, up0 = path.at(0.37)
-        p1, r1, tan1, side1, up1 = path.at(0.62)
-        out = side0 * side_sign
-        sh = p0 + up0 * r0 * 0.75 + out * r0 * 0.35
-        elbow = sh + tan0 * 0.75 + V((0, 0, 0.3)) + out * 0.18
-        tip = p1 + up1 * r1 * 0.5 + tan1 * 0.55 + out * r1 * 0.7 + V((0, 0, 0.08))
-        trail = [p1 + up1 * r1 * 0.2 + out * r1 * 0.95, path.at(0.5)[0] + out * path.at(0.5)[1] * 0.95,
-                 p0 + out * r0 * 0.95 + tan0 * 0.2]
-        m.part(name, 0.37)
-        m.beam(sh, elbow, 0.08, "dragon_red")
-        m.beam(elbow, tip, 0.06, "dragon_red")
-        horn(m, elbow, (elbow - sh).normalized() * 0.3 + V((0, 0, 1)), 0.05, 0.18, "bone", 4)       # wing thumb claw
-        outline = [sh, elbow, tip] + trail
-        for flip in (False, True):
-            vs = [m.bm.verts.new(q + out * (0.012 if flip else -0.012)) for q in outline]
-            for i in range(1, len(vs) - 1):                                                       # fan triangles
-                tri = (vs[0], vs[i], vs[i + 1]) if not flip else (vs[0], vs[i + 1], vs[i])
-                fc = m.bm.faces.new(tri)
-                fc[m.sw], fc[m.grp] = B.NAMES.index("dragon_dark"), m.cur
-                for v in tri:
-                    v[m.sv] = 0.37
-        return sh, tip
+    # ---- folded wings, draped over the flanks like a cloak: arm (shoulder -> elbow -> wrist), three finger bones
+    #      fanning back to the hips, membrane between them with a scalloped trailing edge. Everything is laid out in
+    #      body-surface coordinates so the membrane follows the body's curve and never cuts into it.
+    def wing(name, sg):
+        m.part(name, WING["SH"][0])
+        W_ = {k: V(v) for k, v in WING.items()}
+        to3 = lambda q: surf(path, q.x, q.y, q.z, sg)                       # noqa: E731
+        wr = W_["WR"]
+
+        def scallop(a, b):
+            q = (W_[a] + W_[b]) / 2
+            q = q.lerp(wr, 0.28)
+            q.z = 0.035
+            return q
+        edge = [W_["F1"], scallop("F1", "F2"), W_["F2"], scallop("F2", "F3"), W_["F3"], scallop("F3", "A"), W_["A"],
+                W_["SH"], W_["EL"]]
+        n = 3
+        for a, b in zip(edge, edge[1:]):                                    # membrane: fan from the wrist, subdivided
+            grid = {}
+            for i in range(n + 1):
+                for j in range(n + 1 - i):
+                    q = wr * (1 - (i + j) / n) + a * (i / n) + b * (j / n)
+                    grid[i, j] = q
+            for flip, dh in ((False, 0.014), (True, -0.014)):
+                vs = {}
+                for key, q in grid.items():
+                    v = m.bm.verts.new(to3(V((q.x, q.y, max(q.z + dh, 0.012)))))
+                    v[m.sv], v[m.hv] = q.x, q.z
+                    vs[key] = v
+                tris_ = []
+                for i in range(n):
+                    for j in range(n - i):
+                        tris_.append((vs[i, j], vs[i + 1, j], vs[i, j + 1]))
+                        if i + j < n - 1:
+                            tris_.append((vs[i + 1, j], vs[i + 1, j + 1], vs[i, j + 1]))
+                for tri in tris_:
+                    ctr = sum((v.co for v in tri), V()) / 3
+                    nrm = (tri[1].co - tri[0].co).cross(tri[2].co - tri[0].co)
+                    outward = ctr - path.at(tri[0][m.sv])[0]
+                    if (nrm.dot(outward) < 0) != flip:
+                        tri = tri[::-1]
+                    fc = m.bm.faces.new(tri)
+                    fc[m.sw], fc[m.grp] = B.NAMES.index("dragon_light" if not flip else "dragon_dark"), m.cur
+
+        def bone_line(a, b, k=5, lift=0.03):
+            qs = [W_[a].lerp(W_[b], t / (k - 1)) for t in range(k)]
+            return [to3(V((q.x, q.y, q.z + lift))) for q in qs], [q.z for q in qs], [q.x for q in qs]
+        pts, hs, ss_ = bone_line("SH", "EL", 4)
+        strut(m, pts, 0.075, 0.06, "dragon_red", 6, hs, ss_)
+        pts, hs, ss_ = bone_line("EL", "WR", 4)
+        strut(m, pts, 0.06, 0.05, "dragon_red", 6, hs, ss_)
+        for fi, r0 in (("F1", 0.04), ("F2", 0.034), ("F3", 0.03)):
+            pts, hs, ss_ = bone_line("WR", fi, 6, 0.022)
+            strut(m, pts, r0, 0.012, "dragon_red", 5, hs, ss_, point=True)
+        for key, rad in (("EL", 0.075), ("WR", 0.065)):                       # knuckles
+            k0 = len(m.bm.verts)
+            oriented_blob(m, to3(W_[key] + V((0, 0, 0.03))), V((rad, rad, rad)), V((1, 0, 0)), "dragon_red", 6, 4)
+            m.bm.verts.ensure_lookup_table()
+            for v in m.bm.verts[k0:]:
+                v[m.sv], v[m.hv] = W_[key].x, W_[key].z
+        k0 = len(m.bm.verts)
+        p_wr = to3(W_["WR"] + V((0, 0, 0.06)))
+        horn(m, p_wr, (p_wr - path.at(W_["WR"].x)[0]).normalized() + path.at(W_["WR"].x)[2] * -0.6, 0.035, 0.15, "bone", 4)  # thumb claw
+        m.bm.verts.ensure_lookup_table()
+        for v in m.bm.verts[k0:]:
+            v[m.sv], v[m.hv] = W_["WR"].x, W_["WR"].z
+        return to3(W_["SH"]), to3(W_["F1"])
     wl = wing("wing_L", -1)
     wr = wing("wing_R", 1)
     bmesh.ops.recalc_face_normals(m.bm, faces=[f for f in m.bm.faces if f[m.grp] != GROUPS.index("wing_L")
                                                 and f[m.grp] != GROUPS.index("wing_R")])
     me = bpy.data.meshes.new("chr_dragon_mesh")
-    ids = [f[m.sw] for f in m.bm.faces]
+    ids = [(f[m.sw], f[m.tiled]) for f in m.bm.faces]
     m.bm.to_mesh(me)
     m.bm.free()
     ob = bpy.data.objects.new("chr_dragon_mesh", me)
     coll.objects.link(ob)
     me.materials.append(bpy.data.materials["M_Palette"])
-    for i, sid in enumerate(ids):
-        P.set_swatch(ob, B.NAMES[sid], [i])
+    for i, (sid, tiled) in enumerate(ids):
+        if not tiled:
+            P.set_swatch(ob, B.NAMES[sid], [i])
     return ob, {"wing_L": wl, "wing_R": wr}
 
 
@@ -308,11 +453,13 @@ def build_rig(coll, path, wings):
     bone("root", (0, 0, 0), (0, 0.5, 0), None)
     for name, s0, s1, par in S_BONES:
         bone(name, path.at(s0)[0], path.at(s1)[0], par)
+    for name in BREATH:                  # leaf copies that carry the breathing swell, so no child bone inherits it
+        bone(f"breath_{name}", *segs[name], name)
     neck_end = path.at(0.0)[0]
-    bone("head", neck_end, HEAD_C + HEAD_F * 0.75, "neck_1")
-    bone("jaw", HEAD_C - HEAD_F * 0.05 + V((0, 0, -0.1)), HEAD_C + HEAD_F * 0.72 + V((0, 0, -0.16)), "head")
+    bone("head", neck_end, hp(HEAD_C + HEAD_F * 0.75), "neck_1")
+    bone("jaw", hp(HEAD_C - HEAD_F * 0.05 + V((0, 0, -0.1))), hp(HEAD_C + HEAD_F * 0.72 + V((0, 0, -0.16))), "head")
     for sx, nm in ((1, "eyelid_L"), (-1, "eyelid_R")):
-        e = HEAD_C + HEAD_F * 0.12 + HEAD_SIDE * sx * 0.255 + V((0, 0, 0.075))
+        e = hp(HEAD_C + HEAD_F * 0.12 + HEAD_SIDE * sx * 0.255 + V((0, 0, 0.075)))
         bone(nm, e - HEAD_F * 0.05, e + HEAD_F * 0.1, "head")
     for nm, (sh, tip) in wings.items():
         bone(nm, sh, tip, "chest")
@@ -325,40 +472,82 @@ def build_rig(coll, path, wings):
     return rig, segs
 
 
-def skin(ob, rig):
+BREATH = ("chest", "spine", "hips")
+
+
+def head_entry(path):
+    """Arc position where the neck leaves the (scaled) cranium: the tube in front of it is inside the head."""
+    rx, ry, rz = 0.36 * HS, 0.3 * HS, 0.25 * HS
+    s = 0.0
+    while s < 0.2:
+        d = path.at(s)[0] - HEAD_C
+        if (d.dot(HEAD_F) / rx) ** 2 + (d.dot(HEAD_SIDE) / ry) ** 2 + (d.z / rz) ** 2 > 1.0:
+            return s
+        s += 0.002
+    return s
+
+
+def chain_weights(s, chain, blend=0.035):
+    """Tent weights along the body chain that cross-fade over +-blend at each joint. The chest / spine / hips share
+    goes to their breath_ leaf bones (same place, no children), which do the breathing."""
+    ws = []
+    for a, b, n in chain:
+        w = min(s - a, b - s) / blend + 0.5
+        if a == 0.0:
+            w = max(w, 0.5 + (b - s) / blend if s <= b else w)
+        if b >= 0.999:
+            w = max(w, 0.5 + (s - a) / blend if s >= a else w)
+        w = min(max(w, 0.0), 1.0)
+        if w > 0:
+            ws.append((w, n))
+    tot = sum(w for w, _ in ws) or 1.0
+    return [(w / tot, f"breath_{n}" if n in BREATH else n) for w, n in ws]
+
+
+def skin(ob, rig, path):
+    """Body: weights by arc position s (not straight-line distance), so the tail tip lying by the snout never follows
+    the head; the neck end tucked inside the cranium rides with the head. Wings: low membrane (h small) moves with the
+    body under it, the raised arm and fingers with the wing bone. Everything else is rigid to its part's bone."""
     me = ob.data
-    grp = me.attributes["grp"].data
-    sval = me.attributes["s"].data
+    # read the per-vertex values through bmesh: right after a bmesh.to_mesh, me.attributes[...] can still hand back
+    # zeros (that is what made the whole body follow the neck in the first version of stir)
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    sl, hl, gl = bm.verts.layers.float["s"], bm.verts.layers.float["h"], bm.faces.layers.int["grp"]
+    sval = [v[sl] for v in bm.verts]
+    hval = [v[hl] for v in bm.verts]
     vgrp = {}
-    for poly in me.polygons:
-        for vi in poly.vertices:
-            vgrp.setdefault(vi, GROUPS[grp[poly.index].value])
+    for f in bm.faces:
+        for v in f.verts:
+            vgrp.setdefault(v.index, GROUPS[f[gl]])
+    bm.free()
     for b in rig.data.bones:
         ob.vertex_groups.new(name=b.name)
     chain = sorted(((min(s0, s1), max(s0, s1), n) for n, s0, s1, _ in S_BONES), key=lambda x: x[0])
-    blend = 0.035
+    s_head = head_entry(path)
     for v in me.vertices:
         g = vgrp.get(v.index, "body")
+        s = sval[v.index]
+        if g.startswith("wing"):
+            k = min(max((hval[v.index] - 0.04) / 0.16, 0.0), 1.0)
+            if k > 0:
+                ob.vertex_groups[g].add([v.index], k, "REPLACE")
+            for w, n in chain_weights(s, chain):
+                if w * (1 - k) > 0:
+                    ob.vertex_groups[n].add([v.index], w * (1 - k), "REPLACE")
+            continue
         if g != "body":
             ob.vertex_groups[g].add([v.index], 1.0, "REPLACE")
             continue
-        s = sval[v.index].value
-        ws = []
-        for a, b, n in chain:                      # tent weights that cross-fade over +-blend at each joint
-            w = min(s - a, b - s) / blend + 0.5
-            if a == 0.0:
-                w = max(w, 0.5 + (b - s) / blend if s <= b else w)
-            if b == 1.0 or b >= 0.999:
-                w = max(w, 0.5 + (s - a) / blend if s >= a else w)
-            w = min(max(w, 0.0), 1.0)
-            if w > 0:
-                ws.append((w, n))
-        tot = sum(w for w, _ in ws) or 1.0
-        for w, n in ws:
-            ob.vertex_groups[n].add([v.index], w / tot, "REPLACE")
+        if s < s_head:
+            ob.vertex_groups["head"].add([v.index], 1.0, "REPLACE")
+            continue
+        for w, n in chain_weights(s, chain):
+            ob.vertex_groups[n].add([v.index], w, "REPLACE")
     ob.parent = rig
     mod = ob.modifiers.new("rig", "ARMATURE")
     mod.object = rig
+    return s_head
 
 
 # ---------------------------------------------------------------- animation
@@ -387,7 +576,7 @@ def anim_idle(rig, p):
         "wing_L": [(roll_axis(rig, "wing_L"), 3 * b)], "wing_R": [(roll_axis(rig, "wing_R"), -3 * b)],
         "tail_5": [((0, 0, 1), 3 * math.sin(2 * math.pi * p))], "tail_6": [((0, 0, 1), 6 * math.sin(2 * math.pi * p))],
     }
-    scale = {"chest": 1 + 0.045 * b, "spine": 1 + 0.06 * b, "hips": 1 + 0.03 * b}
+    scale = {"breath_chest": 1 + 0.045 * b, "breath_spine": 1 + 0.06 * b, "breath_hips": 1 + 0.03 * b}
     return rots, {}, scale
 
 
@@ -407,8 +596,8 @@ def anim_stir(rig, p):
         "tail_4": [((0, 0, 1), 6 * flick)], "tail_5": [((0, 0, 1), 12 * flick)], "tail_6": [((0, 0, 1), 18 * flick)],
         "fore_R": [(lift_axis(rig, "fore_R"), 4 * up)],
     }
-    loc = {"eyelid_L": V((0, 0, 0.075 * eyes)), "eyelid_R": V((0, 0, 0.075 * eyes))}
-    scale = {"chest": 1 + 0.07 * breath, "spine": 1 + 0.08 * breath, "hips": 1 + 0.03 * breath}
+    loc = {"eyelid_L": V((0, 0, 0.075 * HS * eyes)), "eyelid_R": V((0, 0, 0.075 * HS * eyes))}
+    scale = {"breath_chest": 1 + 0.07 * breath, "breath_spine": 1 + 0.08 * breath, "breath_hips": 1 + 0.03 * breath}
     return rots, loc, scale
 
 
@@ -445,6 +634,7 @@ def tris(ob):
 
 
 def main():
+    do_renders = "--no-renders" not in sys.argv
     bpy.ops.wm.open_mainfile(filepath=str(ROOT / "template.blend"))
     sc = bpy.context.scene
     sc.render.fps = FPS
@@ -459,7 +649,8 @@ def main():
     PR.trim_below_floor(body)                           # paws / claws / jaw dip under z 0: flatten, drop unseen bottoms
     hoard = build_hoard(assets, random.Random(11))
     rig, segs = build_rig(assets, path, wings)
-    skin(body, rig)
+    s_head = skin(body, rig, path)
+    print(f"STAT neck enters the head at s {s_head:.3f}")
     hoard.parent = rig                                   # static: rides with the root, no skin
     for o, nm in ((body, "dragon"), (hoard, "hoard")):
         ok, bb = B.check_bounds(o, W, D, H)
@@ -470,7 +661,21 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "chr_dragon.blend"), relative_remap=True)
     sys.argv = [sys.argv[0], "--", str(ROOT / "export")]
     exec(compile((ROOT / "tools" / "export_assets.py").read_text(), "export_assets.py", "exec"), {"__name__": "__main__"})
-    renders(rig, body, hoard)
+    if do_renders:
+        renders(rig, body, hoard)
+
+
+def save_gif(imgs, path, ms):
+    """GIF with one shared 96-colour palette and no dithering: render noise otherwise defeats GIF compression and the
+    files run to tens of MB. A light median filter first takes the Cycles speckle off."""
+    from PIL import Image, ImageFilter
+    imgs = [im.filter(ImageFilter.MedianFilter(3)) for im in imgs]
+    strip = Image.new("RGB", (imgs[0].width, imgs[0].height * 4))
+    for i, k in enumerate((0, len(imgs) // 3, 2 * len(imgs) // 3, len(imgs) - 1)):
+        strip.paste(imgs[k], (0, imgs[0].height * i))
+    pal = strip.quantize(96, method=Image.Quantize.MEDIANCUT)
+    q = [im.quantize(palette=pal, dither=Image.Dither.NONE) for im in imgs]
+    q[0].save(path, save_all=True, append_images=q[1:], duration=ms, loop=0, optimize=True)
 
 
 def renders(rig, body, hoard):
@@ -527,30 +732,32 @@ def renders(rig, body, hoard):
     sc.cycles.samples = 10
     tmp = out / "_dragon"
     tmp.mkdir(exist_ok=True)
-    rows = []
-    for name, frames, step in (("idle", 96, 4), ("stir", 144, 4)):
+    rows, both = [], []
+    for name, frames, step in (("idle", 96, 2), ("stir", 144, 2)):
         rig.animation_data.action = bpy.data.actions[name]
         imgs = []
-        K.look(gc, (0.5 - 0.6, 0.2, 0.5), -25, 8.5, pitch_deg=40)
+        K.look(gc, (0.5 - 0.7, 0.0, 0.45), -25, 7.6, pitch_deg=38)
         for f in range(0, frames + (0 if name == "idle" else 1), step):
             sc.frame_set(f)
             pth = tmp / f"{name}_{f:03d}.png"
-            sc.render.resolution_x, sc.render.resolution_y = 640, 440
+            sc.render.resolution_x, sc.render.resolution_y = 720, 480
             sc.render.filepath = str(pth)
             bpy.ops.render.render(write_still=True)
             im = Image.open(pth).convert("RGB")
-            ImageDraw.Draw(im).text((10, 416), f"chr_dragon  {name}  frame {f}/{frames}", font=font, fill=(240, 240, 245))
+            ImageDraw.Draw(im).text((12, 454), f"chr_dragon  {name}  frame {f}/{frames}", font=font, fill=(240, 240, 245))
             imgs.append(im)
-        imgs[0].save(out / f"dragon_{name}.gif", save_all=True, append_images=imgs[1:], duration=int(1000 * step / FPS), loop=0)
+        save_gif(imgs, out / f"dragon_{name}.gif", int(1000 * step / FPS))
+        both += imgs
         rows.append((name, [imgs[int(i * (len(imgs) - 1) / 5)] for i in range(6)]))
         for q in tmp.iterdir():
             q.unlink()
+    save_gif(both, out / "dragon_anims.gif", int(1000 * 2 / FPS))
     tmp.rmdir()
     rig.animation_data.action = None
-    sheet = Image.new("RGB", (6 * 320, len(rows) * 220), (24, 26, 32))
+    sheet = Image.new("RGB", (6 * 330, len(rows) * 220), (24, 26, 32))
     for r, (name, ims) in enumerate(rows):
         for i, im in enumerate(ims):
-            sheet.paste(im.resize((320, 220), Image.LANCZOS), (320 * i, 220 * r))
+            sheet.paste(im.resize((330, 220), Image.LANCZOS), (330 * i, 220 * r))
     sheet.save(out / "dragon_anim_frames.png")
 
 

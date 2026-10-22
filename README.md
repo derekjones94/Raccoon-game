@@ -7,6 +7,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 - 1 m = 1 Godot unit = 1 grid cell. Footprints are whole cells, inset 0.03 m.
 - Origin at bottom-centre. Exported +Y up and ready to drop in with no rotation or scale.
 - One shared material per model, sampling the 128×128 palette (`raccoon/textures/palette.png`, 16 px swatches). Use nearest filtering, no mipmaps.
+- Two palette cells are pattern tiles rather than flat colours: `dragon_scales` (7,0) and `dragon_belly` (6,4). The dragon spreads its UVs over them to get its scales and belly plates; turning on mipmaps would blur those patterns.
 - Names: `bld_<name>_<W>x<D>` buildings, `kit_` 1-cell building pieces, `prop_` props, `chr_` characters.
 - Walls sit on the edge of their cell.
 
@@ -29,7 +30,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 - **Skeleton.** The raccoon, kit, elder and weasel share one 30-bone skeleton, matching the KayKit `Rig_Medium` bone names. Rest pose is an A-pose. Hand slots are `handslot.l` and `handslot.r`.
 - **Animations.** All four have the same six looping animations: `idle` (48 frames), `walk` (20), `carry` (24), `work` (24), `sneak` (32), `sleep` (72), all at 24 fps. Feet stay on the floor (y = 0).
 - **Retargeting.** Since the bones match, one AnimationLibrary works on all four, and KayKit animations can be retargeted onto them.
-- **Dragon.** Its own 23-bone rig, with two animations: `idle` (breathing) and `stir`.
+- **Dragon.** Its own 26-bone rig, with two animations: `idle` (a 4 s breathing loop) and `stir` (a 6 s one-shot that starts and ends on the rest pose). `breath_chest`, `breath_spine` and `breath_hips` are leaf bones that only scale for breathing; leave them alone. The hoard is a separate mesh, `chr_dragon_hoard`, inside the same file.
 - **Tools.** Attach a held tool with a `BoneAttachment3D` on `handslot.r` (or `.l`), with no offset. The tool's grip is its origin and the handle runs along the slot's +Y.
 - **Elder cane.** `prop_cane.glb` goes on `chr_raccoon_elder`'s `handslot.r` with no offset. It was checked against every idle and walk frame and doesn't clip.
 

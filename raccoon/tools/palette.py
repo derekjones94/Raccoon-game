@@ -7,6 +7,11 @@ Rows (top to bottom in the image):
 
 Every model colours its faces by collapsing their UVs onto a swatch centre: set_swatch(obj, "stone_mid").
 
+Pattern swatches (TILES) hold a 16 px seamless motif instead of a flat colour. A face shows the motif by spreading its
+UVs over the whole cell (tile_uv), so neighbouring faces join into one continuous pattern; collapsed UVs on them still
+read as the base colour. Needs nearest filtering and no mipmaps. dragon_scales (7,0) replaced the unused ember;
+dragon_belly (6,4) replaced the unused moss_dark.
+
 Run:  python3 tools/palette.py      -> textures/palette.png, palette_labeled.png, palette.json
 """
 import json
@@ -29,8 +34,8 @@ ROWS = [
     ("Treasure", [("gold_dark", "a36a1c"), ("gold", "e0a32e"), ("gold_light", "f6cb52"), ("gold_glint", "fff1b0"),
                   ("silver", "c9d0d8"), ("ruby", "c4203a"), ("sapphire", "2d5fd0"), ("emerald", "1fa66a")]),
     ("Guild + nature", [("teal_dark", "0f4a4c"), ("teal", "1a7a78"), ("teal_light", "3fb3a8"), ("amethyst", "8a4fc4"),
-                        ("moss_dark", "35502c"), ("moss", "5a8a3a"), ("moss_light", "92b955"), ("mushroom_glow", "7fe0d8")]),
-    ("Torch + dragon", [("ember", "8c2a14"), ("torch_orange", "f07a1e"), ("flame_yellow", "ffc73a"), ("flame_white", "fff4d6"),
+                        ("dragon_belly", "e2d6b4"), ("moss", "5a8a3a"), ("moss_light", "92b955"), ("mushroom_glow", "7fe0d8")]),
+    ("Torch + dragon", [("dragon_scales", "a8242a"), ("torch_orange", "f07a1e"), ("flame_yellow", "ffc73a"), ("flame_white", "fff4d6"),
                         ("dragon_dark", "5c1418"), ("dragon_red", "a8242a"), ("dragon_light", "e0503a"), ("bone", "e2d6b4")]),
 ]
 
@@ -58,6 +63,41 @@ def set_swatch(ob, name, faces=None):
             uv[li].uv = (u, v)
 
 
+def tile_uv(name, tu, tv):
+    """UV of point (tu, tv) in 0..1 inside a pattern swatch: tu across, tv down the tile (tv 0 = top row of pixels).
+    Inset half a pixel so nearest filtering never picks up the neighbouring swatch."""
+    r, c, _ = SWATCH[name]
+    k = 0.5 / CELL
+    return ((c + k + tu * (1 - 2 * k)) / GRID, 1 - (r + k + tv * (1 - 2 * k)) / GRID)
+
+
+def _scales(x, y):
+    """Overlapping round scales, tips pointing down the tile (= toward the tail). Each scale is a disc and the row
+    above lies on top, so what shows of each is a U: dark rim round the tip, a lighter lip just inside it."""
+    for j in range(-2, 4):                    # upper rows first: the first disc containing the pixel owns it
+        cy = 8 * j
+        for i in range(-1, 3):
+            cx = 8 * i + 4 * (j % 2)
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            d = (dx * dx + dy * dy) ** 0.5
+            if d < 5.7:
+                if d > 4.7:
+                    return "6a161b"           # rim
+                if d > 3.5 and dy > 0:
+                    return "c23a30"           # lip
+                return "a8242a"
+    return "6a161b"
+
+
+def _belly(x, y):
+    """Cross plates: two per tile, a shaded seam under each."""
+    k = y % 8
+    return "9c8a62" if k == 7 else ("c9b98f" if k == 6 else "e2d6b4")
+
+
+TILES = {"dragon_scales": _scales, "dragon_belly": _belly}
+
+
 def rgb(hx):
     return tuple(int(hx[i:i + 2], 16) for i in (0, 2, 4))
 
@@ -70,6 +110,10 @@ def build():
     d = ImageDraw.Draw(im)
     for name, (r, c, hx) in SWATCH.items():
         d.rectangle([c * CELL, r * CELL, c * CELL + CELL - 1, r * CELL + CELL - 1], fill=rgb(hx))
+        if name in TILES:
+            for y in range(CELL):
+                for x in range(CELL):
+                    im.putpixel((c * CELL + x, r * CELL + y), rgb(TILES[name](x, y)))
     im.save(tex / "palette.png")
     # labeled sheet
     S, pad, lw = 120, 14, 170
@@ -88,6 +132,8 @@ def build():
         for c, (name, hx) in enumerate(sw):
             x = lw + c * (S + pad)
             d.rectangle([x, y, x + S, y + S], fill=rgb(hx))
+            if name in TILES:
+                sheet.paste(im.crop((c * CELL, r * CELL, (c + 1) * CELL, (r + 1) * CELL)).resize((S + 1, S + 1), Image.NEAREST), (x, y))
             d.text((x, y + S + 4), name, font=f, fill=(225, 228, 235))
             d.text((x, y + S + 19), f"#{hx}  ({r},{c})", font=f, fill=(140, 145, 160))
     sheet.save(ROOT / "textures" / "palette_labeled.png")
