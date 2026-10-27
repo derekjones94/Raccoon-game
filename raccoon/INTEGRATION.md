@@ -4,6 +4,7 @@ Notes for wiring the animated buildings and the raccoons' job clips into the gam
 
 - **Batch 1:** woodpile, fishing spot, washing pool, rummage camp, den.
 - **Batch 2:** farm, cave garden, stockpile, cold cellar, rubble heap. The farm, cave garden, cold cellar and rubble heap replace stand-ins with new models; the stockpile replaces our early blockout.
+- **Batch 3:** smelter, brewery, tinker bench, fence stall, trash bin. The smelter, brewery and trash bin replace stand-ins; the tinker bench and the fence stall were rebuilt at raccoon size (the old bench top was as tall as a raccoon, and the old counter was out of reach).
 
 `raccoon/ANIMATION_TRACKER.md` lists what is done and what is next.
 
@@ -13,7 +14,7 @@ Every animated building contains invisible marker nodes:
 
 | Node | Where |
 |---|---|
-| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp, farm, cave garden, stockpile, cold cellar, rubble heap |
+| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp, farm, cave garden, stockpile, cold cellar, rubble heap, smelter, brewery, tinker bench, fence stall, trash bin |
 | `spot_sleep_1`, `spot_sleep_2`, `spot_sleep_3` | Den. Beds 1 and 2 are adult beds; bed 3 is the kit's bed. |
 
 To put a raccoon to work, copy the marker's **global transform**, position and rotation, onto the raccoon's root. Add no offset, no extra turn and no `look_at`:
@@ -24,7 +25,8 @@ raccoon.global_transform = spot.global_transform
 ```
 
 - Our raccoon models face **+Z** in Godot, and so does every spot. Copying the transform makes the raccoon face the right way.
-- **Don't** turn the raccoon toward the building's centre. That is what made the fishing rods point away from the water: the fishing spot's water is off to the side (+X), so its `spot_work` faces +X.
+- **Don't** turn the raccoon toward the building's centre. That is what made the fishing rods point away from the water: the fishing spot's water is off to the side (+X), so its `spot_work` faces +X. The smelter's spot faces +X too (the raccoon pumps the bellows side-on to the furnace).
+- Copy the spot's **height** too. At the fence stall the spot is on top of the Fence's stool, 0.24 m up.
 - Each spot is placed so the raccoon's feet (or seat) are exactly on the surface and its paws, tool and tail clear everything. If it ends up even a few centimetres away, the axe misses the log, the fishing line won't meet the rod tip, and the tail may go into a rim.
 
 ## 2. Tools: attach with no offset
@@ -34,6 +36,8 @@ raccoon.global_transform = spot.global_transform
 | `prop_axe.glb` | Woodpile | `work_chop` |
 | `prop_fishing_rod.glb` | Fishing spot | `work_fish` |
 | `prop_watering_can.glb` | Farm | `work_water` |
+| `prop_ladle.glb` | Brewery | `work_stir` |
+| `prop_hammer.glb` | Tinker bench | `work_hammer` |
 
 To attach a tool:
 1. Add a `BoneAttachment3D` on the raccoon's skeleton, bone **`handslot.r`**.
@@ -44,6 +48,7 @@ Each tool is built in the hand slot's own space:
 - The handle runs along +Y, toward the axe head or the rod tip.
 - **The axe's sharp edge points along +X.**
 - **The watering can is carried by its top handle.** The handle runs along +Y toward the spout, and the can hangs below it (-Z).
+- **The hammer's striking face points along +X**, like the axe's edge. The ladle's bowl is at the +Y end.
 
 `work_chop` was built against exactly this frame, so the edge lands on the log first. If the game uses a different axe model, such as a KayKit one, its blade sits differently in the slot. That is why the axe struck with its blunt end. Use `prop_axe.glb`, or rotate the other axe in your scene to match it: edge along +X, handle along +Y.
 
@@ -63,6 +68,11 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_stockpile_2x2` | `spot_work` (behind the open crate) | `work_stash` (48) | none | `work` (48) |
 | `bld_cold_cellar_2x2` | `spot_work` (behind the ice bin) | `work_stash` (48) | none | `work` (48) |
 | `bld_rubble_heap_2x2` | `spot_work` (behind the heap) | `work_rummage` (48) | none | `work` (48) |
+| `bld_smelter_2x2` | `spot_work` (at the bellows, faces the furnace: +X) | `work_pump` (48) | none | `work` (48) |
+| `bld_brewery_2x2` | `spot_work` (behind the cauldron) | `work_stir` (48) | `prop_ladle` | `work` (48) |
+| `bld_tinker_bench_1x1` | `spot_work` (at the bench) | `work_hammer` (32) | `prop_hammer` | `work` (32) |
+| `bld_fence_stall_2x2` | `spot_work` (on the stool behind the counter) | `work_haggle` (48) | none | `work` (48) |
+| `bld_trash_bin_1x1` | `spot_work` (behind the spill) | `work_rummage` (48) | none | `work` (48) |
 
 All clips are 24 fps and loop.
 
@@ -76,6 +86,11 @@ All clips are 24 fps and loop.
 - **Cave garden:** the young mushroom between the paws wobbles, and puffs spores, on each pat.
 - **Stockpile and cold cellar:** the goods on top of the crate (or ice bin) settle on each of the paws' two shoves (frames 14 and 20).
 - **Rubble heap:** the stones beside the dig spot jostle on each paw's dig, and a puff of dust rises.
+- **Smelter:** the bellows' top board and its handle move with the raccoon's paws, two pumps a loop, and the fire flares on each. Out of sync, the paws would float above the handle. Keep these two in step, as at the fishing spot and the farm.
+- **Brewery:** the swirl in the brew turns with the ladle, two turns a loop.
+- **Tinker bench:** sparks jump off the bar on the hammer's taps (frames 0 and 16).
+- **Fence stall:** the stack of coins jumps when the Fence taps it (frames 17 and 22), and the scale tips.
+- **Trash bin:** the banana peel and a can on the heap jump as the paws dig; the lid rattles.
 
 If you can't keep them in sync, the buildings still look right on their own. You just lose the hit lining up with the chips, and the bite with the ears.
 
@@ -94,11 +109,13 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Stockpile and cold cellar:** the open crate and the ice bin have a low lip on the raccoon's side, for the same reason: the paws reach over it into the goods.
 - **Stockpile:** the crate's lid leans open in both clips; in `work` it rattles.
 - **Cold cellar:** the door (`pr_door`) is shut in `idle` and open in `work`, so it snaps open or shut when the clip switches. If you'd rather it swing, blend the two clips over a few frames (AnimationTree crossfade), or start `work` a moment before the raccoon arrives. Frosty wisps curl from under the shut door; when it's open, cold mist rolls out along the ground.
-- **Rubble heap:** the raccoon sorts the heap with the same `work_rummage` clip as at the rummage camp.
+- **Rubble heap:** the raccoon sorts the heap with the same `work_rummage` clip as at the rummage camp. So does the trash bin: the raccoon digs into the spill from a tipped-over can.
+- **Fence stall:** the Fence stands on its stool behind the counter, with the counter top at paw height. Customers stand at the front of the counter. There's no customer spot yet; tell me if you want one.
+- **Tinker bench:** a low bench the raccoon crouches at, sized for a 0.4 m raccoon.
 
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have all seven job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`.
+- **Adults** (`chr_raccoon`) have all eleven job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`.
 - **Kits** (`chr_raccoon_kit`) have none. The buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air. It also shouldn't swing an axe.
 - **The elder** (`chr_raccoon_elder`) has none. He keeps his cane in his right paw, and these poses would need their own versions for his hunched posture.
 
@@ -118,7 +135,8 @@ The only allowed contacts are the intended ones:
 - the axe edge in the log on the hit frames;
 - the rod tip at the line;
 - the watering can's spout at its water stream;
-- paws in the water, the heaps, the planter's soil and the goods in the crates;
+- the hammer on the bar it works, the ladle in the brew;
+- paws in the water, the heaps, the planter's soil, the goods in the crates, the bellows handle, the counter and its coins, the bar on the bench;
 - the wader's legs in the water.
 
 Results are in `renders/qa_buildings.txt`. The job clips also pass the character check (`renders/qa_report.txt`): no limb into the body or head, nothing under the floor.

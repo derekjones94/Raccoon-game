@@ -44,17 +44,57 @@ MOUND_C, MOUND_R = V((0.0, 0.62, 0.0)), V((0.9, 0.36, 0.5))
 SHOVES = SP.SHOVES
 
 
+def snow_patch(m, c, r, rnd, n=12):
+    """A thin drift of snow on the ground: an irregular, softly bulging outline, a hair above the floor."""
+    k0 = rnd.uniform(0, TAU)
+    rim = [m.bm.verts.new(c + V((r[0] * (1 + 0.16 * math.sin(3 * a + k0) + rnd.uniform(-0.05, 0.05)) * math.cos(a),
+                                 r[1] * (1 + 0.16 * math.sin(3 * a + k0) + rnd.uniform(-0.05, 0.05)) * math.sin(a), 0.002)))
+           for a in (TAU * i / n for i in range(n))]
+    mid = m.bm.verts.new(c + V((0, 0, 0.006)))
+    faces = [m.bm.faces.new((rim[i], rim[(i + 1) % n], mid)) for i in range(n)]
+    for f in faces:
+        f.normal_update()
+        if f.normal.z < 0:
+            f.normal_flip()
+    m.tag(faces, "stone_frost")
+
+
+def mound(m, rnd, segs=20):
+    """The cellar's turf roof as ONE dome (no shells poking through each other): rings of faces coloured in bands,
+    bare earth at the foot, grass above it, a cap of snow whose edge dips and rises gently round the dome."""
+    import bmesh
+    us = (1.0, 0.97, 0.9, 0.78, 0.62, 0.42, 0.2)                    # ring radii (fraction of MOUND_R), foot to top
+    wob = [1 + 0.03 * math.sin(3 * TAU * k / segs + 0.7) + 0.015 * math.sin(7 * TAU * k / segs) for k in range(segs)]
+    rings = []
+    for u in us:
+        z = MOUND_R.z * (1 - u ** 2.2) ** 0.62
+        rings.append([m.bm.verts.new(MOUND_C + V((MOUND_R.x * u * wob[k] * math.cos(TAU * k / segs),
+                                                   MOUND_R.y * u * wob[k] * math.sin(TAU * k / segs), z)))
+                      for k in range(segs)])
+    top = m.bm.verts.new(MOUND_C + V((0, 0, MOUND_R.z)))
+    faces = []
+    for r, (a, b) in enumerate(zip(rings, rings[1:])):
+        for k in range(segs):
+            j = (k + 1) % segs
+            faces.append((r, k, m.bm.faces.new((a[k], a[j], b[j], b[k]))))
+    for k in range(segs):
+        faces.append((len(rings) - 1, k, m.bm.faces.new((rings[-1][k], rings[-1][(k + 1) % segs], top))))
+    bmesh.ops.recalc_face_normals(m.bm, faces=[f for _, _, f in faces])
+    for r, k, f in faces:
+        snow_from = 3 + (1 if math.sin(2 * TAU * k / segs + 1.3) > 0.55 else 0)    # the snow line dips and rises
+        sw = "wood_dark" if r == 0 else "stone_frost" if r >= snow_from else "moss"
+        m.tag([f], sw)
+
+
 def build(coll, rnd):
     m = B.M()
     # ---- yard: packed earth with patches of snow
     m.obox(V((0, 0, FLOOR / 2)), (1.94, 1.94, FLOOR), "rope_dark")
     for c, r in ((V((-0.7, -0.65)), (0.16, 0.1)), (V((0.72, -0.72)), (0.14, 0.12)), (V((-0.15, -0.8)), (0.12, 0.07)),
                  (V((0.75, 0.05)), (0.12, 0.16))):
-        m.blob(V((c.x, c.y, FLOOR)), V((r[0], r[1], 0.008)), "stone_frost", 8, 2)
-    # ---- the mound: earth, a grass cap, snow on top
-    m.blob(MOUND_C, MOUND_R, "wood_dark", 12, 5)
-    m.blob(MOUND_C + V((0, 0.02, 0.06)), V((0.82, 0.3, 0.46)), "moss", 12, 4)
-    m.blob(MOUND_C + V((0.05, 0.04, 0.3)), V((0.55, 0.2, 0.21)), "stone_frost", 10, 4)
+        snow_patch(m, V((c.x, c.y, FLOOR)), r, rnd)
+    # ---- the mound: one smooth turf dome, earth at the foot, grass, a cap of snow
+    mound(m, rnd)
     # ---- the doorway: stone jambs and lintel in a stone face set into the mound, a dark way down behind
     x0, x1, h = DOOR
     fd = 0.1

@@ -28,30 +28,35 @@ Also new in batch 1:
 - **Job clips** on `chr_raccoon` (adults only): `work_chop`, `work_fish`, `work_scrub`, `work_rummage`.
 - **Tooling:** the job-clip baker with arm IK and a check that keeps paws and forearms out of the body; the building animation and clipping-check kit (`tools/anim_kit.py`).
 
-## Batch 2: food and storage. Done, awaiting your sign-off
+## Batch 2: food and storage. Done, signed off
 
 | Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_farm_2x2` | ✅ rebuilt to fit 2×2 (was 3.09 m wide): fenced patch, rows of cabbages, carrots and seedlings, wheat, sunflowers, scarecrow, water barrel | ✅ wheat and sunflowers sway, scarecrow rags flap, a butterfly | ✅ a water stream from the can's spout along the seedling row, splash rings, seedlings perk up | `work_water` + `prop_watering_can` (new): lifts the can, tips it, pours with a sweep | `spot_work` | ✅ clean | ⬜ |
-| `bld_cave_garden_2x2` | ✅ rebuilt: dark cave floor ringed by mossy boulders, a plank planter of glowing mushrooms, a drip pool, a log with shelf mushrooms | ✅ glowing caps swell and fade, spores drift up, water drips into the pool | ✅ the young mushroom between the paws wobbles and puffs spores on each pat | `work_tend` (new): crouched, pats the soil round a mushroom | `spot_work` | ✅ clean | ⬜ |
-| `bld_stockpile_2x2` | ✅ refreshed: plank yard, tarp lean-to over crates, barrels and sacks, hand-cart, tally board, an open crate being packed | ✅ tarp corner flaps, lantern and rope end sway | ✅ goods settle on each shove, the lid rattles | `work_stash` (new): crouched, settles goods in the crate with both paws, rubs them clean | `spot_work` | ✅ clean | ⬜ |
-| `bld_cold_cellar_2x2` | ✅ rebuilt: snowy earth mound with a frosted stone doorway and plank door, ice bin of fish and apples, salt-fish barrel, sled | ✅ frosty wisps from under the door, drying fish sway | ✅ the door stands open, cold mist rolls out, food settles in the bin | `work_stash` | `spot_work` | ✅ clean | ⬜ |
-| `bld_rubble_heap_2x2` | ✅ rebuilt: a heap of broken stone, an ore bay, a plank stack with a pick, scrap barrel, wheelbarrow | ✅ pebbles trickle down the heap and settle | ✅ stones by the paws jostle, dust puffs | `work_rummage` (from batch 1): sorts the heap | `spot_work` | ✅ clean | ⬜ |
+| `bld_farm_2x2` | ✅ rebuilt to fit 2×2 (was 3.09 m wide): fenced patch, rows of cabbages, carrots and seedlings, wheat, sunflowers, scarecrow, water barrel | ✅ wheat and sunflowers sway, scarecrow rags flap, a butterfly | ✅ a water stream from the can's spout along the seedling row, splash rings, seedlings perk up | `work_water` + `prop_watering_can` (new): lifts the can, tips it, pours with a sweep | `spot_work` | ✅ clean | ✅ |
+| `bld_cave_garden_2x2` | ✅ rebuilt: dark cave floor ringed by mossy boulders, a plank planter of glowing mushrooms, a drip pool, a log with shelf mushrooms | ✅ glowing caps swell and fade, spores drift up, water drips into the pool | ✅ the young mushroom between the paws wobbles and puffs spores on each pat | `work_tend` (new): crouched, pats the soil round a mushroom | `spot_work` | ✅ clean | ✅ |
+| `bld_stockpile_2x2` | ✅ refreshed: plank yard, tarp lean-to over crates, barrels and sacks, hand-cart, tally board, an open crate being packed | ✅ tarp corner flaps, lantern and rope end sway | ✅ goods settle on each shove, the lid rattles | `work_stash` (new): crouched, settles goods in the crate with both paws, rubs them clean | `spot_work` | ✅ clean | ✅ |
+| `bld_cold_cellar_2x2` | ✅ rebuilt: earth mound with a grass band and a snow cap (one smooth dome), a frosted stone doorway and plank door, ice bin of fish and apples, salt-fish barrel, sled | ✅ frosty wisps from under the door, drying fish sway | ✅ the door stands open, cold mist rolls out, food settles in the bin | `work_stash` | `spot_work` | ✅ clean | ✅ |
+| `bld_rubble_heap_2x2` | ✅ rebuilt: a heap of broken stone, an ore bay, a plank stack with a pick, scrap barrel, wheelbarrow | ✅ pebbles trickle down the heap and settle | ✅ stones by the paws jostle, dust puffs | `work_rummage` (from batch 1): sorts the heap | `spot_work` | ✅ clean | ✅ |
 
 Also new in batch 2:
 - **Tool:** `prop_watering_can.glb`, carried by its top handle.
 - **Job clips** on `chr_raccoon` (adults only): `work_water`, `work_tend`, `work_stash`. The four batch 1 clips and the six base clips are unchanged.
 - Every building is 2,000 triangles or fewer.
 
-## Batch 3: crafting
+## Batch 3: crafting. Done, awaiting your sign-off
 
-| Model | Now | Model work | `idle` | `work` | Raccoon clip / tool | QA | Signed off |
+| Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_smelter_2x2` | stand-in | 🔁 rebuild | ⬜ fire | ⬜ bellows | ⬜ | ⬜ | ⬜ |
-| `bld_brewery_2x2` | stand-in | 🔁 rebuild | ⬜ bubbling pot | ⬜ ladle | ⬜ stir | ⬜ | ⬜ |
-| `bld_tinker_bench_1x1` | our early blockout | 🔁 refresh | ⬜ | ⬜ grindstone, hammer | ⬜ hammer | ⬜ | ⬜ |
-| `bld_fence_stall_2x2` | ours | — | ⬜ awning | ⬜ coins on the scale | ⬜ haggle | ⬜ | ⬜ |
-| `bld_trash_bin_1x1` | stand-in | 🔁 rebuild | ⬜ lid rattles | ⬜ | ⬜ rummage | ⬜ | ⬜ |
+| `bld_smelter_2x2` | ✅ rebuilt: round stone furnace with a fire-mouth and chimney, bellows, ore bin, coal, ingot moulds, quench bucket | ✅ fire flickers, smoke drifts | ✅ the bellows pump with the paws, the fire flares, sparks fly up the chimney | `work_pump` (new): crouched, both paws pump the bellows handle | `spot_work` (faces the furnace, +X) | ✅ clean | ⬜ |
+| `bld_brewery_2x2` | ✅ rebuilt: iron cauldron of violet brew over a fire, potion shelf, herb rack, mortar table, smoke bombs, powder sacks | ✅ brew bubbles and steams, fire flickers, herbs sway | ✅ a swirl turns with the ladle, harder boil | `work_stir` + `prop_ladle` (new) | `spot_work` | ✅ clean | ⬜ |
+| `bld_tinker_bench_1x1` | ✅ rebuilt at raccoon size: low bench, a bar being worked, vise, gears, lamp, grindstone, tool rack | ✅ lamp flickers, grindstone turns | ✅ sparks on each tap, grindstone spins | `work_hammer` + `prop_hammer` (new): crouched, taps the bar, the left paw holds it | `spot_work` | ✅ clean | ⬜ |
+| `bld_fence_stall_2x2` | ✅ refit: stool pulled up to the counter, counter at paw height, coin stack and a balance scale | ✅ lantern sways, coin sign turns, scale rocks | ✅ the coins jump on each tap, the scale tips | `work_haggle` (new): on the stool, rubs paws, taps the coins, wags a claw "no" | `spot_work` (on the stool) | ✅ clean | ⬜ |
+| `bld_trash_bin_1x1` | ✅ rebuilt: tipped-over tin can with trash spilling out, its lid on the ground | ✅ flies buzz, the lid rocks now and then | ✅ trash jumps as the paws dig, the lid rattles | `work_rummage` (from batch 1) | `spot_work` | ✅ clean | ⬜ |
+
+Also new in batch 3:
+- **Tools:** `prop_ladle.glb`, `prop_hammer.glb`.
+- **Job clips** on `chr_raccoon` (adults only): `work_pump`, `work_stir`, `work_hammer`, `work_haggle`. All earlier clips are unchanged.
+- **Cold cellar (batch 2):** the roof was three overlapping shells; it is now one smooth dome in bands (earth, grass, snow), and the snow drifts on the ground have softer outlines.
 
 ## Batch 4: social and care
 

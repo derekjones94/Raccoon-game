@@ -7,6 +7,10 @@
   work_water    standing at a seedling row, watering can at the right hip: lifts and tips it, pours with a slow sweep
   work_tend     crouched at a low bed, the paws taking turns patting the soil round a plant (two pats each)
   work_stash    crouched at a low open crate: both paws reach in and settle the goods, come back up, rub clean
+  work_pump     crouched at the smelter's bellows, both paws on its handle: two strong pumps a loop
+  work_stir     standing at a cauldron, ladle in the right paw: slow circles through the brew
+  work_hammer   crouched at a low bench, a small hammer in the right paw: tap, tap on the piece the left paw holds
+  work_haggle   standing on a stool behind a counter: rubs its paws, taps the coins twice, wags a claw "no"
 
 How they are made: every frame the body is posed (rotations like the other actions), the feet (or the seat) are
 planted on the floor, then each arm is solved with a two-bone IK so the hand slot lands exactly on its target:
@@ -369,6 +373,118 @@ def stash(p):
     return rots, 0.0, "legs", out
 
 
+PUMP = loc(f=0.122, u=0.098)                          # the bellows handle (a bar across), raised; both paws on it
+PUMP_DEPTH = 0.026                                   # how far a pump presses it down
+
+
+def pump_press(p):
+    """0 (handle up) .. 1 (pressed down): two pumps a loop, a firm press and an easier rise. Shared with the smelter."""
+    u = (2 * p) % 1.0
+    return smooth(u / 0.35) if u < 0.35 else 1 - smooth((u - 0.35) / 0.65)
+
+
+def pump(p):
+    """Crouched at the bellows, leaning in: both paws on the handle push it down, let it rise, twice a loop."""
+    d = pump_press(p)
+    bar = PUMP + loc(u=-PUMP_DEPTH * d)
+    rots = act({
+        "upperleg.l": [(Y, -16), (X, -62)], "upperleg.r": [(Y, 16), (X, -62)],
+        "lowerleg.l": [(X, 86)], "lowerleg.r": [(X, 86)], "foot.l": [(X, -24)], "foot.r": [(X, -24)],
+        "spine": [(X, 26 + 6 * d)], "chest": [(X, 14 + 4 * d)], "head": [(X, -10 - 4 * d), (Z, 6)],
+        "ear.l": [(Y, 10 - 8 * d)], "ear.r": [(Y, -10 + 8 * d)],
+        "tail_1": [(X, -25)],
+    }, tail_sway(p, 5, 2))
+    return rots, -0.004 * d, "legs", {"r": (bar + loc(l=-0.03), None, None), "l": (bar + loc(l=0.03), None, None)}
+
+
+STIR_C = loc(f=0.11, u=0.162, l=-0.07)               # middle of the circle the ladle's grip makes
+POT_C = loc(f=0.2, u=0.062, l=-0.02)                         # where the ladle's bowl circles, in the brew
+STIR_R = (0.012, 0.03)                                # radius of the grip's circle, of the bowl's circle
+
+
+def stir(p):
+    """Standing at the cauldron, ladle in the right paw: two slow circles a loop through the brew; the left paw rests
+    on the hip; the head follows the ladle."""
+    a = TAU * 2 * p
+    ca, sa = math.cos(a), math.sin(a)
+    grip = STIR_C + loc(f=STIR_R[0] * ca, l=STIR_R[0] * sa)
+    bowl = POT_C + loc(f=STIR_R[1] * ca, l=STIR_R[1] * sa)
+    Ts = frame_yz(bowl - grip, FWD - UP)
+    rots = act({
+        "upperleg.l": [(Y, -8), (X, -8)], "upperleg.r": [(Y, 8), (X, -8)],
+        "lowerleg.l": [(X, 12)], "lowerleg.r": [(X, 12)], "foot.l": [(X, -4)], "foot.r": [(X, -4)],
+        "spine": [(X, 10 + 1.5 * ca)], "chest": [(X, 6), (Z, -3 * sa)], "head": [(X, 16), (Z, -6 * sa)],
+        "ear.l": [(Y, 6)], "ear.r": [(Y, -6)],
+    }, tail_sway(p, 6, 1))
+    arms = {"r": (grip, Ts, None), "l": (loc(f=0.05, u=0.12, l=0.1), None, LEFT * 1.0 - UP * 0.4 + V((0, 0.3, 0)))}
+    return rots, 0.0, "legs", arms
+
+
+HAM_X = -0.085                                        # the hammer swings in this plane: out on the right, clear of the snout
+HAM_HIT = loc(f=0.162, u=0.084, l=HAM_X)              # where its face meets the piece on the anvil (past the toes)
+HAM_KEYS = [(0.0, -34, None), (1.0, -8, loc(f=0.1, u=0.17, l=HAM_X - 0.016))]   # a short, wristy lift
+
+
+def _hammer_at(t):
+    """Hammer frame and grip for t: 0 = face on the piece, 1 = raised."""
+    deg = HAM_KEYS[0][1] + (HAM_KEYS[1][1] - HAM_KEYS[0][1]) * t
+    Tm = _sagittal(deg)                                 # face (+X) points the way a downward swing travels
+    g0 = HAM_HIT - _sagittal(HAM_KEYS[0][1]) @ T.HAMMER_FACE
+    return Tm, g0.lerp(HAM_KEYS[1][2], smooth(t))
+
+
+def hammer(p):
+    """Crouched at a low bench; quick light taps (two a loop, on frames 0 and 16), the left paw holding the piece."""
+    q = (2 * p) % 1.0
+    if q < 0.12:
+        t = 0.06 * math.sin(math.pi * q / 0.12)
+    elif q < 0.6:
+        t = smooth((q - 0.12) / 0.48)
+    elif q < 0.78:
+        t = 1.0
+    else:
+        u = (q - 0.78) / 0.22
+        t = 1 - u * u
+    Ts, grip = _hammer_at(t)
+    hit = math.exp(-((q if q < 0.5 else q - 1) ** 2) / 0.003)
+    rots = act({
+        "upperleg.l": [(Y, -16), (X, -62)], "upperleg.r": [(Y, 16), (X, -62)],
+        "lowerleg.l": [(X, 86)], "lowerleg.r": [(X, 86)], "foot.l": [(X, -24)], "foot.r": [(X, -24)],
+        "spine": [(X, 26 + 2 * hit)], "chest": [(X, 14), (Z, -4 * t)], "head": [(X, -8 + 3 * hit), (Z, 4)],
+        "ear.l": [(Y, 10 - 10 * hit)], "ear.r": [(Y, -10 + 10 * hit)],
+        "tail_1": [(X, -25)],
+    }, tail_sway(p, 5, 1))
+    arms = {"r": (grip, Ts, None), "l": (loc(f=0.135, u=0.096, l=0.015), None, None)}   # holds the near end of the piece
+    return rots, 0.0, "legs", arms
+
+
+HAGGLE_TAPS = (0.36, 0.46)                           # when the right paw taps the coins on the counter
+HAGGLE_TAP = loc(f=0.124, u=0.1, l=-0.035)           # the coins, on the counter top
+
+
+def haggle(p):
+    """Standing on the stool behind the counter: rubs its paws together (scheming), leans in and taps the coins twice,
+    straightens and wags a claw: no, not enough. Back to rubbing."""
+    a = TAU * 5 * p
+    rub_r = loc(f=0.1 + 0.005 * math.cos(a), u=0.152 + 0.004 * math.sin(a), l=-0.02)
+    rub_l = loc(f=0.1 - 0.005 * math.cos(a), u=0.152 - 0.004 * math.sin(a), l=0.02)
+    lean = ramp(p, 0.26, 0.34) * (1 - ramp(p, 0.5, 0.58))
+    tap = sum(math.exp(-((p - c) ** 2) / 0.0006) for c in HAGGLE_TAPS)
+    wag = ramp(p, 0.56, 0.64) * (1 - ramp(p, 0.84, 0.92))
+    over = HAGGLE_TAP + loc(u=0.022 * (1 - tap))
+    up = loc(f=0.075, u=0.205, l=-0.075 + 0.012 * math.sin(TAU * 6 * p) * wag)
+    pr = rub_r.lerp(over, lean).lerp(up, wag)
+    pl = rub_l.lerp(loc(f=0.1, u=0.125, l=0.045), lean)
+    rots = act({
+        "upperleg.l": [(Y, -6), (X, -6)], "upperleg.r": [(Y, 6), (X, -6)],
+        "lowerleg.l": [(X, 10)], "lowerleg.r": [(X, 10)], "foot.l": [(X, -4)], "foot.r": [(X, -4)],
+        "spine": [(X, 6 + 20 * lean)], "chest": [(X, 3 + 8 * lean)],
+        "head": [(X, 4 + 10 * lean), (Z, 9 * math.sin(TAU * 3 * p) * wag)],
+        "ear.l": [(Y, 14 - 10 * wag)], "ear.r": [(Y, -14 + 10 * wag)],
+    }, tail_sway(p, 8, 1))
+    return rots, 0.0, "legs", {"r": (pr, None, None), "l": (pl, None, None)}
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -379,6 +495,10 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_water": (water, 64, "prop_watering_can"),
     "work_tend": (tend, 48, None),
     "work_stash": (stash, 48, None),
+    "work_pump": (pump, 48, None),
+    "work_stir": (stir, 48, "prop_ladle"),
+    "work_hammer": (hammer, 32, "prop_hammer"),
+    "work_haggle": (haggle, 48, None),
 }
 
 

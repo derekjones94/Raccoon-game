@@ -5,11 +5,12 @@ Convention for every tool (same as prop_cane):
   * +Y      = along the handle, from the grip toward the working end (axe head, rod tip)
   * the axe's sharp edge points along +X; its blunt back (poll) along -X
   * the watering can is carried by its top handle (+Y toward the spout); the can hangs below it, along -Z
+  * the hammer's striking face points along +X (like the axe's edge); the ladle's bowl opens toward +Z
 Attach in the game as a child of the raccoon's handslot.r bone with an identity transform; the job clips (work_chop,
 work_fish) were built against exactly this frame, so the axe lands edge-first and the rod points over the water.
 
 Run:  python3 tools/build_tools.py
-Out:  tools.blend, export/prop_axe.glb, export/prop_fishing_rod.glb, export/prop_watering_can.glb
+Out:  tools.blend, export/prop_axe.glb, prop_fishing_rod.glb, prop_watering_can.glb, prop_hammer.glb, prop_ladle.glb
 """
 import sys
 from pathlib import Path
@@ -29,6 +30,9 @@ AXE_EDGE = V((0.05, AXE_HEAD_Y, 0.0))    # middle of the cutting edge, slot spac
 ROD_TIP = V((0.0, 0.43, 0.0))  # rod tip, slot space (the fishing line hangs from here)
 CAN_SPOUT = V((0.0, 0.15, -0.018)) # middle of the watering can's rose (the water comes out here), slot space
 CAN_SPOUT_DIR = V((0.0, 0.08, 0.045)).normalized()   # the way the spout points, slot space
+HAMMER_Y = 0.092                     # centre of the hammer head along the handle
+HAMMER_FACE = V((0.02, HAMMER_Y, 0.0))   # middle of the striking face, slot space
+LADLE_BOWL = V((0.0, 0.15, 0.0))     # centre of the ladle's bowl, slot space
 
 
 def prop_axe(coll):
@@ -85,6 +89,24 @@ def prop_watering_can(coll):
     return m.obj("prop_watering_can", coll)
 
 
+def prop_hammer(coll):
+    """A small tinker's hammer: the handle runs from the fist along +Y, the striking face points along +X, a narrow
+    peen along -X."""
+    m = B.M()
+    m.cyl(V((0, 0.044, 0)), 0.0055, 0.112, "wood_light", axis=(0, 1, 0), segs=6, cap="wood_dark")       # handle -0.012 .. 0.1
+    m.cyl(V((0.005, HAMMER_Y, 0)), 0.011, 0.03, "iron", axis=(1, 0, 0), segs=6, cap="iron_light")       # head, face at +X
+    m.cyl(V((-0.017, HAMMER_Y, 0)), 0.008, 0.018, "iron_dark", axis=(-1, 0, 0), segs=4, r2=0.003)       # peen
+    return m.obj("prop_hammer", coll)
+
+
+def prop_ladle(coll):
+    """A long wooden ladle: handle along +Y from the fist, the bowl at the end, opening toward +Z."""
+    m = B.M()
+    m.cyl(V((0, 0.06, 0)), 0.005, 0.16, "wood_light", axis=(0, 1, 0), segs=5, cap="wood_dark")         # handle -0.02 .. 0.14
+    m.cyl(LADLE_BOWL + V((0, 0, 0.002)), 0.022, 0.018, "wood_mid", segs=7, r2=0.012, cap="wood_dark", axis=(0, 0, -1))
+    return m.obj("prop_ladle", coll)
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=str(ROOT / "template.blend"))
     bpy.data.materials["M_Palette"].node_tree.nodes["Image Texture"].image.reload()
@@ -92,7 +114,7 @@ def main():
     for o in list(ref.objects):
         bpy.data.objects.remove(o)
     coll = bpy.data.collections["Assets"]
-    for fn in (prop_axe, prop_fishing_rod, prop_watering_can):
+    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle):
         ob = fn(coll)
         print(f"STAT {ob.name}: {K.tris(ob)} tris")
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "tools.blend"), relative_remap=True)
