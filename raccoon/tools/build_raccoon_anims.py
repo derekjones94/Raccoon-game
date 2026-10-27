@@ -1,5 +1,6 @@
 """Raccoon actions: idle, walk, carry, work, sneak, sleep -- 24 fps, in place, every one a seamless loop -- plus the
-job clips from build_raccoon_jobs.py (work_chop, work_fish, work_scrub, work_rummage).
+job clips from build_raccoon_jobs.py (work_chop, work_fish, work_scrub, work_rummage, work_water, work_tend,
+work_stash).
 Bones follow KayKit Rig_Medium names (upperarm.l, lowerarm.l, wrist.l, hand.l, handslot.l, upperleg.l ...).
 
 Each action is a function of the loop phase p in [0, 1): it returns rotations per bone (armature-space axis, degrees,

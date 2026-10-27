@@ -1,13 +1,19 @@
 == bld_woodpile_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-
 == bld_fishing_spot_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 
 == bld_washing_pool_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-
 == bld_rummage_camp_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-
 == bld_den_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_farm_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_cave_garden_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_cold_cellar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_stockpile_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_rubble_heap_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

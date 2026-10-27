@@ -13,30 +13,35 @@ How the game should use all this: `INTEGRATION.md`.
 
 **Legend:** ✅ done · 🔁 remodel or refresh · ⬜ to do · — not needed
 
-## Batch 1: core jobs + the axe and rod fixes. Done, awaiting your sign-off
+## Batch 1: core jobs + the axe and rod fixes. Done, signed off
 
 | Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_woodpile_1x1` | ✅ rebuilt: stump, 3-2-1 stack of rounds between stakes, split halves | ✅ hatchet rests in the stump | ✅ log on the stump; chips fly on every hit (frames 0 and 32) | `work_chop` + `prop_axe`: one-handed, **edge first** | `spot_work` | ✅ clean | ⬜ |
-| `bld_fishing_spot_1x2` | ✅ rebuilt (was a stand-in): plank deck on a stone-rimmed pond, bucket, tackle box, lantern | ✅ ripples, reeds, lily pads, a fish jumps | ✅ line and float, two bites a loop, a fish flips in the bucket | `work_fish` + `prop_fishing_rod`: seated, **facing the water** | `spot_work` (faces +X) | ✅ clean | ⬜ |
-| `bld_washing_pool_2x1` | ✅ rebuilt: shallow stone-rimmed pool, drying plank, washboard, laundry line | ✅ cloths stir, apple and carrot bob | ✅ ripples from the paws | `work_scrub`: wades in, crouches, rubs food in the water | `spot_work` (in the shallows) | ✅ clean | ⬜ |
-| `bld_rummage_camp_2x2` | ✅ rebuilt: junk heap with a cart wheel, pot and crate; lean-to, baskets, campfire | ✅ fire flickers, sack twitches, leaf flutters | ✅ junk on the heap jostles | `work_rummage`: digs at the heap from behind | `spot_work` | ✅ clean | ⬜ |
-| `bld_den_2x2` | ✅ (second pass done before this batch); beds remade as flat mats sized to the sleepers | ✅ chimney smoke, stove, candle and lantern flicker | ✅ someone asleep: candle out, stove low, slow smoke | `sleep` (existing) | `spot_sleep_1`, `_2` (adults), `_3` (kit) | ✅ clean, three sleepers | ⬜ |
+| `bld_woodpile_1x1` | ✅ rebuilt: stump, 3-2-1 stack of rounds between stakes, split halves | ✅ hatchet rests in the stump | ✅ log on the stump; chips fly on every hit (frames 0 and 32) | `work_chop` + `prop_axe`: one-handed, **edge first** | `spot_work` | ✅ clean | ✅ |
+| `bld_fishing_spot_1x2` | ✅ rebuilt (was a stand-in): plank deck on a stone-rimmed pond, bucket, tackle box, lantern | ✅ ripples, reeds, lily pads, a fish jumps | ✅ line and float, two bites a loop, a fish flips in the bucket | `work_fish` + `prop_fishing_rod`: seated, **facing the water** | `spot_work` (faces +X) | ✅ clean | ✅ |
+| `bld_washing_pool_2x1` | ✅ rebuilt: shallow stone-rimmed pool, drying plank, washboard, laundry line | ✅ cloths stir, apple and carrot bob | ✅ ripples from the paws | `work_scrub`: wades in, crouches, rubs food in the water | `spot_work` (in the shallows) | ✅ clean | ✅ |
+| `bld_rummage_camp_2x2` | ✅ rebuilt: junk heap with a cart wheel, pot and crate; lean-to, baskets, campfire | ✅ fire flickers, sack twitches, leaf flutters | ✅ junk on the heap jostles | `work_rummage`: digs at the heap from behind | `spot_work` | ✅ clean | ✅ |
+| `bld_den_2x2` | ✅ (second pass done before this batch); beds remade as flat mats sized to the sleepers | ✅ chimney smoke, stove, candle and lantern flicker | ✅ someone asleep: candle out, stove low, slow smoke | `sleep` (existing) | `spot_sleep_1`, `_2` (adults), `_3` (kit) | ✅ clean, three sleepers | ✅ |
 
 Also new in batch 1:
 - **Tools:** `prop_axe.glb` and `prop_fishing_rod.glb`.
 - **Job clips** on `chr_raccoon` (adults only): `work_chop`, `work_fish`, `work_scrub`, `work_rummage`.
 - **Tooling:** the job-clip baker with arm IK and a check that keeps paws and forearms out of the body; the building animation and clipping-check kit (`tools/anim_kit.py`).
 
-## Batch 2: food and storage
+## Batch 2: food and storage. Done, awaiting your sign-off
 
-| Model | Now | Model work | `idle` | `work` | Raccoon clip / tool | QA | Signed off |
+| Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_farm_2x2` | stand-in, **3.09 m wide on a 2×2 lot** | 🔁 rebuild to fit | ⬜ crops sway | ⬜ | ⬜ hoe / plant | ⬜ | ⬜ |
-| `bld_cave_garden_2x2` | stand-in | 🔁 rebuild | ⬜ mushroom glow pulses | ⬜ | ⬜ tend | ⬜ | ⬜ |
-| `bld_stockpile_2x2` | our early blockout | 🔁 refresh | ⬜ tarp flaps | ⬜ crate lid | ⬜ carry / drop off | ⬜ | ⬜ |
-| `bld_cold_cellar_2x2` | stand-in | 🔁 rebuild | ⬜ frosty breath | ⬜ hatch | ⬜ | ⬜ | ⬜ |
-| `bld_rubble_heap_2x2` | stand-in | 🔁 rebuild | ⬜ pebbles trickle | ⬜ | ⬜ | ⬜ | ⬜ |
+| `bld_farm_2x2` | ✅ rebuilt to fit 2×2 (was 3.09 m wide): fenced patch, rows of cabbages, carrots and seedlings, wheat, sunflowers, scarecrow, water barrel | ✅ wheat and sunflowers sway, scarecrow rags flap, a butterfly | ✅ a water stream from the can's spout along the seedling row, splash rings, seedlings perk up | `work_water` + `prop_watering_can` (new): lifts the can, tips it, pours with a sweep | `spot_work` | ✅ clean | ⬜ |
+| `bld_cave_garden_2x2` | ✅ rebuilt: dark cave floor ringed by mossy boulders, a plank planter of glowing mushrooms, a drip pool, a log with shelf mushrooms | ✅ glowing caps swell and fade, spores drift up, water drips into the pool | ✅ the young mushroom between the paws wobbles and puffs spores on each pat | `work_tend` (new): crouched, pats the soil round a mushroom | `spot_work` | ✅ clean | ⬜ |
+| `bld_stockpile_2x2` | ✅ refreshed: plank yard, tarp lean-to over crates, barrels and sacks, hand-cart, tally board, an open crate being packed | ✅ tarp corner flaps, lantern and rope end sway | ✅ goods settle on each shove, the lid rattles | `work_stash` (new): crouched, settles goods in the crate with both paws, rubs them clean | `spot_work` | ✅ clean | ⬜ |
+| `bld_cold_cellar_2x2` | ✅ rebuilt: snowy earth mound with a frosted stone doorway and plank door, ice bin of fish and apples, salt-fish barrel, sled | ✅ frosty wisps from under the door, drying fish sway | ✅ the door stands open, cold mist rolls out, food settles in the bin | `work_stash` | `spot_work` | ✅ clean | ⬜ |
+| `bld_rubble_heap_2x2` | ✅ rebuilt: a heap of broken stone, an ore bay, a plank stack with a pick, scrap barrel, wheelbarrow | ✅ pebbles trickle down the heap and settle | ✅ stones by the paws jostle, dust puffs | `work_rummage` (from batch 1): sorts the heap | `spot_work` | ✅ clean | ⬜ |
+
+Also new in batch 2:
+- **Tool:** `prop_watering_can.glb`, carried by its top handle.
+- **Job clips** on `chr_raccoon` (adults only): `work_water`, `work_tend`, `work_stash`. The four batch 1 clips and the six base clips are unchanged.
+- Every building is 2,000 triangles or fewer.
 
 ## Batch 3: crafting
 

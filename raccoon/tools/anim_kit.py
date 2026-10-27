@@ -331,7 +331,7 @@ def report(name, probs, path):
     txt = "\n".join(lines)
     print(txt)
     old = path.read_text() if path.exists() else ""
-    blocks = [b for b in old.split("\n\n") if b.strip() and not b.startswith(f"== {name}:")]
+    blocks = [b.strip("\n") for b in old.split("\n\n") if b.strip() and not b.strip("\n").startswith(f"== {name}:")]
     path.write_text("\n\n".join(blocks + [txt]) + "\n")
 
 

@@ -1,6 +1,9 @@
 # Integration notes: building animations, work spots, tools
 
-Notes for wiring the animated buildings and the raccoons' job clips into the game. Batch 1: the woodpile, fishing spot, washing pool, rummage camp and den. Everything is in `raccoon/export/` and keeps the old file names, so it drops in over the old models.
+Notes for wiring the animated buildings and the raccoons' job clips into the game. Everything is in `raccoon/export/` and keeps the old file names, so it drops in over the old models.
+
+- **Batch 1:** woodpile, fishing spot, washing pool, rummage camp, den.
+- **Batch 2:** farm, cave garden, stockpile, cold cellar, rubble heap. The farm, cave garden, cold cellar and rubble heap replace stand-ins with new models; the stockpile replaces our early blockout.
 
 `raccoon/ANIMATION_TRACKER.md` lists what is done and what is next.
 
@@ -10,7 +13,7 @@ Every animated building contains invisible marker nodes:
 
 | Node | Where |
 |---|---|
-| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp |
+| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp, farm, cave garden, stockpile, cold cellar, rubble heap |
 | `spot_sleep_1`, `spot_sleep_2`, `spot_sleep_3` | Den. Beds 1 and 2 are adult beds; bed 3 is the kit's bed. |
 
 To put a raccoon to work, copy the marker's **global transform**, position and rotation, onto the raccoon's root. Add no offset, no extra turn and no `look_at`:
@@ -30,6 +33,7 @@ raccoon.global_transform = spot.global_transform
 |---|---|---|
 | `prop_axe.glb` | Woodpile | `work_chop` |
 | `prop_fishing_rod.glb` | Fishing spot | `work_fish` |
+| `prop_watering_can.glb` | Farm | `work_water` |
 
 To attach a tool:
 1. Add a `BoneAttachment3D` on the raccoon's skeleton, bone **`handslot.r`**.
@@ -39,6 +43,7 @@ Each tool is built in the hand slot's own space:
 - The origin is the grip.
 - The handle runs along +Y, toward the axe head or the rod tip.
 - **The axe's sharp edge points along +X.**
+- **The watering can is carried by its top handle.** The handle runs along +Y toward the spout, and the can hangs below it (-Z).
 
 `work_chop` was built against exactly this frame, so the edge lands on the log first. If the game uses a different axe model, such as a KayKit one, its blade sits differently in the slot. That is why the axe struck with its blunt end. Use `prop_axe.glb`, or rotate the other axe in your scene to match it: edge along +X, handle along +Y.
 
@@ -53,6 +58,11 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_washing_pool_2x1` | `spot_work` (in the shallows) | `work_scrub` (48) | none | `work` (48) |
 | `bld_rummage_camp_2x2` | `spot_work` (behind the heap) | `work_rummage` (48) | none | `work` (48) |
 | `bld_den_2x2` | `spot_sleep_1` to `_3` | `sleep` (72) | none | `work` (72) = someone asleep |
+| `bld_farm_2x2` | `spot_work` (behind the seedling row) | `work_water` (64) | `prop_watering_can` | `work` (64) |
+| `bld_cave_garden_2x2` | `spot_work` (behind the planter) | `work_tend` (48) | none | `work` (48) |
+| `bld_stockpile_2x2` | `spot_work` (behind the open crate) | `work_stash` (48) | none | `work` (48) |
+| `bld_cold_cellar_2x2` | `spot_work` (behind the ice bin) | `work_stash` (48) | none | `work` (48) |
+| `bld_rubble_heap_2x2` | `spot_work` (behind the heap) | `work_rummage` (48) | none | `work` (48) |
 
 All clips are 24 fps and loop.
 
@@ -62,6 +72,10 @@ All clips are 24 fps and loop.
 - **Washing pool:** ripple rings start from the paws twice a loop, on the scrubbing beat.
 - **Rummage camp:** the junk on the heap jostles while the paws dig.
 - **Den:** the room's 72-frame loop matches the sleep loop.
+- **Farm:** the water stream hangs from the can's spout. It only flows while the can is tipped (building frames 10 to 47) and slides with the raccoon's arm as it sweeps along the row. Out of sync, the water would pour from mid-air. This is the one batch 2 building where sync matters as much as at the fishing spot.
+- **Cave garden:** the young mushroom between the paws wobbles, and puffs spores, on each pat.
+- **Stockpile and cold cellar:** the goods on top of the crate (or ice bin) settle on each of the paws' two shoves (frames 14 and 20).
+- **Rubble heap:** the stones beside the dig spot jostle on each paw's dig, and a puff of dust rises.
 
 If you can't keep them in sync, the buildings still look right on their own. You just lose the hit lining up with the chips, and the bite with the ears.
 
@@ -77,10 +91,14 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Den:** the roof is the child node **`bld_den_2x2_roof`**. Hide it to look inside, for example when the camera is close or a raccoon is home. The chimney smoke is a child of the roof, so it hides with it. In `work` (someone asleep) the candle is out, the stove burns low and the smoke comes slower.
 - **Fishing spot:** the pond is part of the building, on its +X side. The line and float belong to the building. They hang from where the adult's rod tip is in `work_fish`, which never moves, down to the water.
 - **Washing pool:** the raccoon *wades*: it stands inside the pool, ankle-deep, and crouches to wash its food. That's intentional. With the raccoon's round belly and short arms, any wall between it and the water would sit in its wrists or belly.
+- **Stockpile and cold cellar:** the open crate and the ice bin have a low lip on the raccoon's side, for the same reason: the paws reach over it into the goods.
+- **Stockpile:** the crate's lid leans open in both clips; in `work` it rattles.
+- **Cold cellar:** the door (`pr_door`) is shut in `idle` and open in `work`, so it snaps open or shut when the clip switches. If you'd rather it swing, blend the two clips over a few frames (AnimationTree crossfade), or start `work` a moment before the raccoon arrives. Frosty wisps curl from under the shut door; when it's open, cold mist rolls out along the ground.
+- **Rubble heap:** the raccoon sorts the heap with the same `work_rummage` clip as at the rummage camp.
 
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have all four job clips.
+- **Adults** (`chr_raccoon`) have all seven job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`.
 - **Kits** (`chr_raccoon_kit`) have none. The buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air. It also shouldn't swing an axe.
 - **The elder** (`chr_raccoon_elder`) has none. He keeps his cane in his right paw, and these poses would need their own versions for his hunched posture.
 
@@ -99,7 +117,8 @@ Every building is checked over every frame of both clips:
 The only allowed contacts are the intended ones:
 - the axe edge in the log on the hit frames;
 - the rod tip at the line;
-- paws in the water and in the heap;
+- the watering can's spout at its water stream;
+- paws in the water, the heaps, the planter's soil and the goods in the crates;
 - the wader's legs in the water.
 
 Results are in `renders/qa_buildings.txt`. The job clips also pass the character check (`renders/qa_report.txt`): no limb into the body or head, nothing under the floor.

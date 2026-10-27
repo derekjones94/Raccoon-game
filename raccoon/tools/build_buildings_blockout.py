@@ -270,6 +270,12 @@ def bld_guild_hall_3x3(coll, rnd):
     return m.obj("bld_guild_hall_3x3", coll)
 
 
+# rebuilt and animated by their own scripts: shown in the showcase here, but never exported from here (that would
+# overwrite the animated .glb with this early blockout)
+OWN_SCRIPT = {"bld_den_2x2": "build_den.py", "bld_stockpile_2x2": "build_stockpile.py",
+              "bld_rummage_camp_2x2": "build_rummage_camp.py", "bld_woodpile_1x1": "build_woodpile.py",
+              "bld_washing_pool_2x1": "build_washing_pool.py"}
+
 BUILDINGS = [  # (fn, W, D, H, showcase position = footprint centre)
     (bld_den_2x2, 2, 2, 1, (0.5, 0.5)),
     (bld_stockpile_2x2, 2, 2, 1, (3.5, 0.5)),
@@ -327,6 +333,10 @@ def main():
         c = show[nm].location
         K.instance(rac, ref, (c.x + off[0], c.y + off[1], 0), rot=rot, name=f"ref_raccoon_{nm}")
 
+    for ob, *_ in obs:
+        if ob.name in OWN_SCRIPT:
+            assets.objects.unlink(ob)
+            ref.objects.link(ob)
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "buildings_blockout.blend"), relative_remap=True)
     sys.argv = [sys.argv[0], "--", str(ROOT / "export")]
     exec(compile((ROOT / "tools" / "export_assets.py").read_text(), "export_assets.py", "exec"), {"__name__": "__main__"})

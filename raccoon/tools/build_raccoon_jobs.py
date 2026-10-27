@@ -4,6 +4,9 @@
   work_fish     sitting at the end of the pier, rod held still out over the water (the building owns line + bobber)
   work_scrub    wading ankle-deep in the washing pool's shallows, crouched, paws rubbing food in the water
   work_rummage  crouched at the junk heap, paws taking turns digging at it
+  work_water    standing at a seedling row, watering can at the right hip: lifts and tips it, pours with a slow sweep
+  work_tend     crouched at a low bed, the paws taking turns patting the soil round a plant (two pats each)
+  work_stash    crouched at a low open crate: both paws reach in and settle the goods, come back up, rub clean
 
 How they are made: every frame the body is posed (rotations like the other actions), the feet (or the seat) are
 planted on the floor, then each arm is solved with a two-bone IK so the hand slot lands exactly on its target:
@@ -258,6 +261,114 @@ def rummage(p):
     return rots, 0.0, "legs", {"r": (pr, None, None), "l": (pl, None, None)}
 
 
+WATER_GRIP = loc(f=0.058, u=0.118, l=-0.128)            # the can at rest: carried by its top handle at the right hip
+WATER_POUR = loc(f=0.085, u=0.15, l=-0.114)            # pouring: lifted out front on the right
+WATER_TILT = 34.0                                    # degrees the can tips forward to pour (the spout then points down)
+WATER_SWEEP = 0.016                                  # side to side along the row while pouring (m)
+
+
+def water_can(a):
+    """Watering can frame (hand slot) tipped forward by a degrees: handle level and pointing ahead, can below."""
+    th = math.radians(a)
+    y = FWD * math.cos(th) - UP * math.sin(th)
+    z = UP * math.cos(th) + FWD * math.sin(th)
+    return frame_yz(y, z)
+
+
+def water_phase(p):
+    """(tilt 0..1, sweep offset along l) of the can at loop phase p; shared with the farm (its water stream)."""
+    if p < 0.18:
+        t = smooth(p / 0.18)
+    elif p < 0.72:
+        t = 1.0
+    elif p < 0.88:
+        t = 1 - smooth((p - 0.72) / 0.16)
+    else:
+        t = 0.0
+    sweep = WATER_SWEEP * math.sin(TAU * (p - 0.18) / 0.54) if 0.18 <= p < 0.72 else 0.0
+    return t, sweep
+
+
+def water(p):
+    """Standing at the end of a seedling row, the can carried by its top handle at the right hip. Lift it out front
+    and tip it, pour while sweeping slowly along the row, tip it back and lower it, a moment's rest. The left paw
+    hangs loose for balance."""
+    t, sweep = water_phase(p)
+    Ts = water_can(WATER_TILT * t)
+    grip = WATER_GRIP.lerp(WATER_POUR, t) + loc(l=sweep - 0.008 * t - 0.012 * math.sin(math.pi * t))   # out past the thigh
+    breath = AN.s(p, 2)
+    rots = act({
+        "upperleg.l": [(Y, -8), (X, -12)], "upperleg.r": [(Y, 8), (X, -4)],               # easy stance, left foot ahead
+        "lowerleg.l": [(X, 16)], "lowerleg.r": [(X, 8)], "foot.l": [(X, -4)], "foot.r": [(X, -4)],
+        "spine": [(X, 6 + 6 * t + breath)], "chest": [(X, 3 + 4 * t)],
+        "head": [(X, 4 + 4 * t), (Z, 6 - 120 * sweep)],                              # watching the water land
+        "ear.l": [(Y, 8)], "ear.r": [(Y, -8)],
+    }, tail_sway(p, 6, 1))
+    bal = loc(f=0.04, u=0.12, l=0.1)
+    arms = {"r": (grip, Ts, None), "l": (bal, None, LEFT * 1.0 - UP * 0.4 + V((0, 0.3, 0)))}
+    return rots, -0.004 * t, "legs", arms
+
+
+TEND_C = loc(f=0.104, u=0.05)                         # the plant being tended: the paws pat the soil either side of it
+TEND_PATS = (0.3, 0.6)                                # when (in each paw's half of the loop) a pat lands
+
+
+def tend(p):
+    """Crouched at a low bed; the right paw pats the soil round the plant twice, then the left; the resting paw
+    hovers by the knee. The building wiggles the plant on each pat (see tend_pats)."""
+    def paw(side, ph):
+        t = (p - ph) % 1.0 * 2                                           # 0..1 in this paw's half, >1 resting
+        spot = TEND_C + loc(l=0.034 * (1 if side == "l" else -1))
+        home = loc(f=0.088, u=0.085, l=0.042 * (1 if side == "l" else -1))
+        if t >= 1:
+            return home
+        out = ramp(t, 0.0, 0.18) * (1 - ramp(t, 0.78, 1.0))
+        lift = 0.022 * (1 - max(math.exp(-((t - c) ** 2) / 0.003) for c in TEND_PATS))
+        return home.lerp(spot + loc(u=lift), out)
+    pr, pl = paw("r", 0.0), paw("l", 0.5)
+    side = math.sin(TAU * p)                                               # leans toward the busy paw
+    rots = act({
+        "upperleg.l": [(Y, -18), (X, -70)], "upperleg.r": [(Y, 18), (X, -70)],             # deep crouch, knees apart
+        "lowerleg.l": [(X, 96)], "lowerleg.r": [(X, 96)], "foot.l": [(X, -26)], "foot.r": [(X, -26)],
+        "spine": [(X, 28)], "chest": [(X, 14), (Z, 4 * side)], "head": [(X, -12), (Z, 8 * side)],
+        "ear.l": [(Y, 10 + 4 * side)], "ear.r": [(Y, -10 + 4 * side)],
+        "tail_1": [(X, -30)],
+    }, tail_sway(p, 6, 1))
+    return rots, 0.0, "legs", {"r": (pr, None, None), "l": (pl, None, None)}
+
+
+def tend_pats():
+    """Loop phases where a paw pats the soil (the building's plant wiggles then)."""
+    return sorted(((ph + c / 2) % 1.0) for ph in (0.0, 0.5) for c in TEND_PATS)
+
+
+STASH_C = loc(f=0.124, u=0.09)                       # top of the goods in the crate: both paws settle them here
+
+
+def stash(p):
+    """Crouched at a low open crate: both paws reach in together and settle the goods (a little shove each), come
+    back up over the rim and rub each other clean, then rest a beat."""
+    reach = ramp(p, 0.04, 0.24) * (1 - ramp(p, 0.52, 0.68))
+    shove = sum(math.exp(-((p - c) ** 2) / 0.0016) for c in (0.3, 0.42))
+    rub = ramp(p, 0.66, 0.72) * (1 - ramp(p, 0.9, 0.96))
+    a = TAU * p * 6
+    out = {}
+    for sd, sgn in (("l", 1), ("r", -1)):
+        home = loc(f=0.135, u=0.112, l=0.032 * sgn)
+        rubbing = loc(f=0.135 + 0.005 * math.cos(a) * sgn, u=0.108 + 0.005 * math.sin(a), l=0.024 * sgn)
+        spot = STASH_C + loc(l=0.032 * sgn, f=0.008 * shove * (1 if (sd == "r") == (p < 0.36) else 0), u=-0.008 * shove)
+        out[sd] = (home.lerp(rubbing, rub).lerp(spot, reach), None, None)
+    rots = act({
+        "upperleg.l": [(Y, -16), (X, -62 - 8 * reach)], "upperleg.r": [(Y, 16), (X, -62 - 8 * reach)],   # crouched low
+        "lowerleg.l": [(X, 86 + 10 * reach)], "lowerleg.r": [(X, 86 + 10 * reach)],
+        "foot.l": [(X, -24 - 2 * reach)], "foot.r": [(X, -24 - 2 * reach)],
+        "tail_1": [(X, -25)],
+        "spine": [(X, 28 + 4 * reach)], "chest": [(X, 15 + 3 * reach)], "head": [(X, -6 - 8 * reach + 10 * rub)],
+        "ear.l": [(Y, 10)], "ear.r": [(Y, -10)],
+    }, tail_sway(p, 7, 1, 0.1))
+    return rots, 0.0, "legs", out
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -265,6 +376,9 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_fish": (fish, 96, "prop_fishing_rod"),
     "work_scrub": (scrub, 48, None),
     "work_rummage": (rummage, 48, None),
+    "work_water": (water, 64, "prop_watering_can"),
+    "work_tend": (tend, 48, None),
+    "work_stash": (stash, 48, None),
 }
 
 
