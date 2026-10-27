@@ -39,9 +39,15 @@ THICK = 0.13
 DOOR = (-90, 15.5, 0, 2)
 WINDOWS = [(-38, 8.5, 2, 2), (158, 8.0, 2, 2), (68, 6.5, 2, 2)]
 OPENINGS = [DOOR] + WINDOWS
-NESTS = [(V((-0.27, CY + 0.28, 0.005)), 0.21, "cloth_blue", ("rope", "burlap")),            # two adults at the back
-         (V((0.14, CY + 0.37, 0.005)), 0.2, "cloth_red", ("rope", "burlap")),
-         (V((-0.44, CY - 0.17, 0.005)), 0.15, "teal", ("burlap", "rope_dark"))]           # a kit on the left
+# beds: flat straw mats with a blanket on top, each big enough for the WHOLE sleeping raccoon (its sleep pose spreads
+# its legs and wraps its tail on the floor: 41 x 33 cm for an adult, 25 x 22 for a kit, measured from the clip), so
+# nothing of a sleeper hangs over an edge or cuts through a rim. (blanket centre, half-sizes, blanket colour, variant)
+MAT, BLANKET = 0.014, 0.005
+SLEEP_BOX = {"chr_raccoon": (V((-0.0315, 0.024)), V((0.207, 0.167))),          # footprint centre + half-sizes, own space
+             "chr_raccoon_kit": (V((-0.019, 0.0075)), V((0.124, 0.108)))}
+BEDS = [(V((-0.25, CY + 0.27, 0)), "cloth_blue", "chr_raccoon"),               # two adults side by side at the back
+        (V((0.23, CY + 0.27, 0)), "cloth_red", "chr_raccoon"),
+        (V((-0.42, CY - 0.14, 0)), "teal", "chr_raccoon_kit")]                 # the kit's, front left
 
 
 def R(a):
@@ -204,25 +210,33 @@ def window(m, ac, hw, c0, c1, shutter, curtain, rnd):
                rot=rot)
 
 
-def nest(m, c, r, blanket, rnd, sw=("rope", "burlap")):
-    """A straw ring bed: a low wall of straw tufts (alternating colours) round a blanket heap."""
-    n = 9
-    h = 0.075
-    ring_o, ring_i, top = [], [], []
+def pad(m, c, rx, ry, h, sw, z0=0.0, n=12, side="wood_bark", band=True):
+    """A flat rounded-rectangle pad (a superellipse: top face + side band), bottom at z0."""
+    top, bot = [], []
     for k in range(n):
-        a = TAU * k / n + rnd.uniform(-0.1, 0.1)
-        rr = r * rnd.uniform(0.93, 1.07)
-        ring_o.append(m.bm.verts.new(c + V((math.cos(a) * rr, math.sin(a) * rr, 0.0))))
-        top.append(m.bm.verts.new(c + V((math.cos(a) * rr * 0.86, math.sin(a) * rr * 0.86, h * rnd.uniform(0.8, 1.2)))))
-        ring_i.append(m.bm.verts.new(c + V((math.cos(a) * rr * 0.62, math.sin(a) * rr * 0.62, 0.02))))
-    for k in range(n):
+        a = TAU * (k + 0.5) / n
+        ca, sa = math.cos(a), math.sin(a)
+        p = V((c.x + rx * math.copysign(abs(ca) ** 0.5, ca), c.y + ry * math.copysign(abs(sa) ** 0.5, sa), 0))
+        top.append(m.bm.verts.new(p + V((0, 0, z0 + h))))
+        bot.append(m.bm.verts.new(p + V((0, 0, z0))))
+    m.face(top, V((0, 0, 1)), sw)
+    for k in range(n if band else 0):
         j = (k + 1) % n
         a = TAU * (k + 0.5) / n
-        out = V((math.cos(a), math.sin(a), 0.3))
-        m.face((ring_o[k], ring_o[j], top[j], top[k]), out, sw[k % 2])
-        m.face((top[k], top[j], ring_i[j], ring_i[k]), V((-out.x, -out.y, 1.5)), sw[(k + 1) % 2])
-    m.blob(c + V((0.0, 0.0, 0.02)), V((r * 0.66, r * 0.6, 0.05)), blanket, 7, 3)
-    m.blob(c + V((r * 0.25, r * 0.3, 0.05)), V((r * 0.28, r * 0.18, 0.04)), "cloth_cream", 5, 3)     # pillow
+        m.face((bot[k], bot[j], top[j], top[k]), V((math.cos(a), math.sin(a), 0)), side)
+
+
+def bed(m, c, blanket, variant):
+    """A straw mat with a blanket on top that covers the sleeper's whole footprint (it faces the front, -Y)."""
+    off, half = SLEEP_BOX[variant]
+    pad(m, c, half.x + 0.03, half.y + 0.03, MAT, "rope", side="rope_dark")          # straw edge showing round it
+    pad(m, c, half.x + 0.006, half.y + 0.006, BLANKET, blanket, z0=MAT, side=blanket, band=False)
+
+
+def bed_spot(c, variant):
+    """Where the sleeper stands on its bed (its footprint centred on the blanket), facing the front."""
+    off, half = SLEEP_BOX[variant]
+    return V((c.x - off.x, c.y - off.y, MAT + BLANKET + 0.002))
 
 
 def bld_den_2x2(coll, rnd):
@@ -237,19 +251,17 @@ def bld_den_2x2(coll, rnd):
     m.obox(V((-0.02, CY - 0.08, 0.008)), (0.5, 0.34, 0.008), "cloth_mustard", rot=(0, 0, 0.25))
     m.obox(V((-0.02, CY - 0.08, 0.011)), (0.44, 0.28, 0.008), "cloth_red", rot=(0, 0, 0.25))
     # ---- beds: two adult nests at the back, a small one for a kit on the left
-    for c, r, bl, sw in NESTS:
-        nest(m, c, r, bl, rnd, sw)
+    for c, bl, variant in BEDS:
+        bed(m, c, bl, variant)
     # ---- pot-belly stove (pipe continues on the roof object)
     st = V((0.52, CY + 0.0, 0.0))
     m.cyl(st + V((0, 0, 0.03)), 0.075, 0.06, "iron_dark", segs=7)
     m.cyl(st + V((0, 0, 0.13)), 0.1, 0.15, "iron", segs=7, r2=0.085, cap="iron_dark")
-    m.obox(st + V((-0.09, 0, 0.12)), (0.025, 0.08, 0.06), "torch_orange")          # glowing fire door
-    m.obox(st + V((-0.1, 0, 0.12)), (0.012, 0.05, 0.035), "flame_yellow")
+    m.obox(st + V((-0.088, 0, 0.12)), (0.022, 0.085, 0.066), "iron_dark")            # fire door frame (glow: a part)
     m.cyl(st + V((0, 0, 0.42)), 0.032, 0.44, "rust", segs=6)                          # pipe up to the wall top
     # ---- crate table with a candle and a mug, a stool
     B.crate(m, V((0.22, CY - 0.33, 0)), 0.15, rot=0.3)
     m.cyl(V((0.2, CY - 0.33, 0.175)), 0.016, 0.05, "cloth_cream", segs=6)
-    m.obox(V((0.2, CY - 0.33, 0.205)), (0.012, 0.012, 0.018), "flame_yellow")
     m.cyl(V((0.26, CY - 0.3, 0.17)), 0.022, 0.04, "pewter", segs=6)
     # ---- shelf on the back wall: plank on pegs, jars and a stolen book
     p, out, along, a = frame_at(112, -THICK - 0.045 - 0.065)
@@ -264,8 +276,8 @@ def bld_den_2x2(coll, rnd):
     m.obox(p + along * 0.12 + V((0, 0, 0.415)), (0.04, 0.06, 0.07), "cloth_blue", rot=(0, 0.25, a + math.pi / 2))
     # ---- the family stash: coins and a gem by the back-right bed
     for i, (dx, dy) in enumerate(((0, 0), (0.05, 0.02), (0.02, 0.05))):
-        m.cyl(V((0.42 + dx, CY + 0.2 + dy, 0.008 + 0.012 * (i == 0))), 0.028, 0.012, "gold", segs=5, cap="gold_light")
-    m.cyl(V((0.44, CY + 0.22, 0.05)), 0.02, 0.04, "ruby", segs=4, r2=0.0)
+        m.cyl(V((0.42 + dx, CY - 0.2 + dy, 0.008 + 0.012 * (i == 0))), 0.028, 0.012, "gold", segs=5, cap="gold_light")
+    m.cyl(V((0.44, CY - 0.18, 0.05)), 0.02, 0.04, "ruby", segs=4, r2=0.0)
     # ---- windows: a shutter on two of them, a rag curtain inside the back-left one
     window(m, *WINDOWS[0], shutter=1, curtain=None, rnd=rnd)
     window(m, *WINDOWS[1], shutter=None, curtain="cloth_red", rnd=rnd)
@@ -298,8 +310,8 @@ def bld_den_2x2(coll, rnd):
     lp, lout, lal, la = frame_at(-62, 0.1)                   # arm reaches toward the door, along the wall
     m.obox(lp + V((0, 0, 0.29)), (0.04, 0.04, 0.58), "wood_dark")
     m.obox(lp + V((0, 0, 0.565)) - lal * 0.06, (0.14, 0.03, 0.025), "wood_dark", rot=(0, 0, la + math.pi / 2))
-    m.obox(lp + V((0, 0, 0.47)) - lal * 0.11, (0.06, 0.06, 0.08), "flame_yellow")
-    m.obox(lp + V((0, 0, 0.52)) - lal * 0.11, (0.075, 0.075, 0.02), "iron_dark")
+    m.obox(lp + V((0, 0, 0.52)) - lal * 0.11, (0.075, 0.075, 0.02), "iron_dark")         # lantern cap (glow: a part)
+    m.obox(lp + V((0, 0, 0.432)) - lal * 0.11, (0.07, 0.07, 0.012), "iron_dark")         # lantern base
     # ---- firewood against the front-left of the wall, rocks and mushrooms round the base
     # two logs side by side along the wall, one resting in the groove between them: every log lies along the wall
     # tangent, the rows step outward from the wall, 4 mm apart, so no log cuts another, the wall or the floor
@@ -414,6 +426,81 @@ def check_clipping(den, roof):
     return problems
 
 
+STOVE = V((0.52, CY + 0.0, 0.0))
+LANTERN = None                                        # set by den_parts (computed from the lantern post)
+SMOKE_FROM = V((0.46, CY + 0.04, 0.99))               # just over the stovepipe's pot-lid hat
+FRAMES = 72                                           # = the raccoons' sleep loop: breathing and the room in step
+
+
+def den_parts(coll, den, roof):
+    """The moving parts: the stove's fire glow, the candle flame, the lantern glow (den), three smoke puffs (roof:
+    hiding the roof hides its smoke too)."""
+    import anim_kit as A
+    parts = {}
+    m = DenMesh()
+    m.obox(STOVE + V((-0.098, 0, 0.12)), (0.006, 0.07, 0.05), "torch_orange")
+    m.obox(STOVE + V((-0.1, 0, 0.115)), (0.004, 0.045, 0.028), "flame_yellow")
+    parts["pr_stove_glow"] = A.part(m.obj("pr_stove_glow", coll), den, STOVE + V((-0.098, 0, 0.095)))
+    m = DenMesh()
+    m.obox(V((0.2, CY - 0.33, 0.209)), (0.011, 0.011, 0.018), "flame_yellow")
+    parts["pr_candle_flame"] = A.part(m.obj("pr_candle_flame", coll), den, V((0.2, CY - 0.33, 0.2)))
+    lp, lout, lal, la = frame_at(-62, 0.1)
+    lc = lp + V((0, 0, 0.475)) - lal * 0.11
+    m = DenMesh()
+    m.obox(lc, (0.055, 0.055, 0.075), "flame_yellow")
+    parts["pr_lantern_glow"] = A.part(m.obj("pr_lantern_glow", coll), den, lc)
+    for i in range(3):
+        m = DenMesh()
+        m.blob(SMOKE_FROM, V((0.03, 0.03, 0.026)), "stone_frost", 6, 3)
+        parts[f"pr_smoke_{i + 1}"] = A.part(m.obj(f"pr_smoke_{i + 1}", coll), roof, SMOKE_FROM)
+    return parts
+
+
+def den_clips(parts):
+    """idle: smoke puffs drift up, the stove fire and the candle flicker, the lantern glows.
+    work (someone asleep): the candle is out, the stove has burned low, the smoke comes slower and thinner."""
+    import anim_kit as A
+
+    def common(p, slow):
+        pose = {}
+        for i in range(3):
+            u = (p * (2 if not slow else 1) + i / 3) % 1.0                   # each puff: rise, swell, thin out
+            rise = V((0.05 * u + 0.012 * math.sin(TAU * (u + i * 0.3)), 0.03 * u, 0.32 * u))
+            sz = (0.6 + 1.6 * u) * (1 - smooth_end(u)) * (0.7 if slow else 1.0)
+            pose[f"pr_smoke_{i + 1}"] = (rise, None, max(sz, 0.001))
+        return pose
+
+    def idle(p):
+        pose = common(p, False)
+        fl = 1 + 0.18 * math.sin(TAU * 7 * p) + 0.1 * math.sin(TAU * 13 * p + 1)
+        pose["pr_stove_glow"] = (None, None, (1, 1, fl))
+        pose["pr_candle_flame"] = (None, A.q((1, 0.5, 0), 8 * math.sin(TAU * 5 * p)),
+                                   (1, 1, 1 + 0.25 * math.sin(TAU * 9 * p)))
+        pose["pr_lantern_glow"] = (None, None, 1 + 0.03 * math.sin(TAU * 6 * p))
+        return pose
+
+    def work(p):
+        pose = common(p, True)
+        pose["pr_stove_glow"] = (None, None, (1, 1, 0.45 + 0.06 * math.sin(TAU * 2 * p)))   # banked low
+        pose["pr_candle_flame"] = A.hidden()                                              # snuffed
+        pose["pr_lantern_glow"] = (None, None, 1 + 0.03 * math.sin(TAU * 6 * p))
+        return pose
+
+    A.animate(parts, {"idle": (FRAMES, idle), "work": (FRAMES, work)})
+    A.rest_at(parts, "idle", 0)
+
+
+def smooth_end(u):
+    t = min(max((u - 0.75) / 0.25, 0.0), 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def sleep_spots(den):
+    """spot_sleep_1 / _2 (the adults' beds) and spot_sleep_3 (the kit's), on the blankets, facing the front."""
+    import anim_kit as A
+    return [A.spot(den, f"spot_sleep_{i + 1}", bed_spot(c, variant), (0, -1, 0)) for i, (c, bl, variant) in enumerate(BEDS)]
+
+
 def build(coll, rnd=None):
     rnd = rnd or random.Random(21)
     import build_props_blockout as PR
@@ -434,10 +521,13 @@ def main():
         if o.name.startswith(("ref_raccoon", "ref_doorway", "ref_cell", "ref_floor", "ref_grid")):
             bpy.data.objects.remove(o)
     den, roof = build(bpy.data.collections["Assets"])
+    parts = den_parts(bpy.data.collections["Assets"], den, roof)
+    spots = sleep_spots(den)
+    den_clips(parts)
     for ob in (den, roof):
         ok, bb = B.check_bounds(ob, 2, 2, 1)
         print(f"STAT {ob.name}: {K.tris(ob)} tris, inside footprint: {ok} {bb}")
-    print(f"STAT total: {K.tris(den) + K.tris(roof)} tris")
+    print(f"STAT total: {K.tris(den) + K.tris(roof) + sum(K.tris(o) for o in parts.values())} tris")
     probs = check_clipping(den, roof)
     print(f"STAT clipping problems: {len(probs)}")
     for pr in probs[:30]:
@@ -445,7 +535,25 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "den.blend"), relative_remap=True)
     sys.argv = [sys.argv[0], "--", str(ROOT / "export")]
     exec(compile((ROOT / "tools" / "export_assets.py").read_text(), "export_assets.py", "exec"), {"__name__": "__main__"})
+    # ---- QA: the den's own parts and loops, and the family asleep in the nests (work = someone asleep)
+    import anim_kit as A
+    crew = []
+    for sp, (variant, blend) in zip(spots, (("chr_raccoon", "chr_raccoon_animated.blend"),
+                                            ("chr_raccoon", "chr_raccoon_animated.blend"),
+                                            ("chr_raccoon_kit", "chr_raccoon_animated_kit.blend"))):
+        rig, mesh, _ = A.raccoon_at(sp, variant=variant, blend=blend, clip="sleep")
+        crew.append((rig, mesh, None, "work", {}))
+    smoke = [f"pr_smoke_{i}" for i in (1, 2, 3)]
+    allow = [("pr_stove_glow", "bld_den_2x2"), ("pr_candle_flame", "bld_den_2x2"), ("pr_lantern_glow", "bld_den_2x2")] + \
+            [(a, b) for a in smoke for b in smoke if a != b] + [(sm, "bld_den_2x2_roof") for sm in smoke]
+    probs = A.check(den, 2, 2, H=1.0, crew=crew, allow=allow, sky=smoke)
+    A.report("bld_den_2x2", probs, ROOT / "renders" / "qa_buildings.txt")
     if do_renders:
+        objs = [o for c in crew for o in c[:2]]
+        A.render_loops(den, objs, ROOT / "renders" / "bld_den_loops.gif", target=(0.0, 0.05, 0.3), dist=3.4,
+                       pitch=45, idle_frames=36, grid_n=4, hide_in_work=[roof] + [parts[f"pr_smoke_{i}"] for i in (1, 2, 3)])
+        for o in objs:
+            bpy.data.objects.remove(o)
         renders(den, roof)
 
 
@@ -475,9 +583,9 @@ def renders(den, roof):
     for o in (den, roof):
         o.location = (0.5, 0.5, 0) if o is den else o.location
     # the family asleep: two adults and a kit, plus one awake by the door
-    n0, n2 = NESTS[0][0], NESTS[2][0]
-    sl = [sleeper("chr_raccoon_animated.blend", "chr_raccoon", (0.5 + n0.x, 0.5 + n0.y, 0.03), 0.6),
-          sleeper("chr_raccoon_animated_kit.blend", "chr_raccoon_kit", (0.5 + n2.x, 0.5 + n2.y, 0.03), 2.2)]
+    s0, s2 = bed_spot(BEDS[0][0], "chr_raccoon"), bed_spot(BEDS[2][0], "chr_raccoon_kit")
+    sl = [sleeper("chr_raccoon_animated.blend", "chr_raccoon", (0.5 + s0.x, 0.5 + s0.y, s0.z), 0.0),
+          sleeper("chr_raccoon_animated_kit.blend", "chr_raccoon_kit", (0.5 + s2.x, 0.5 + s2.y, s2.z), 0.0)]
     for rig, act, f in sl:
         rig.animation_data.action = act
     sc.frame_set(36)

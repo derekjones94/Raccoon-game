@@ -1,4 +1,5 @@
-"""Raccoon actions: idle, walk, carry, work, sneak, sleep -- 24 fps, in place, every one a seamless loop.
+"""Raccoon actions: idle, walk, carry, work, sneak, sleep -- 24 fps, in place, every one a seamless loop -- plus the
+job clips from build_raccoon_jobs.py (work_chop, work_fish, work_scrub, work_rummage).
 Bones follow KayKit Rig_Medium names (upperarm.l, lowerarm.l, wrist.l, hand.l, handslot.l, upperleg.l ...).
 
 Each action is a function of the loop phase p in [0, 1): it returns rotations per bone (armature-space axis, degrees,
@@ -206,6 +207,8 @@ def pose_quats(rig, rots):
             if axis == "AIM":                       # point the bone along a world direction (deg = the direction)
                 cur = Dp @ (M @ Vector((0, 1, 0)))
                 R = cur.rotation_difference(Vector(deg).normalized()).to_matrix() @ R
+            elif axis == "MAT":                     # set the bone's whole armature-space orientation (deg = a 3x3)
+                R = deg @ M.inverted() @ Dp.inverted()
             else:
                 R = Quaternion(Vector(axis), math.radians(deg)).to_matrix() @ R
         D[b.name] = R @ Dp
@@ -310,6 +313,13 @@ def main():
         k = spec["scale"] * 1.06
         for name, (fn, frames) in ACTIONS.items():
             bake_action(rig, name, fn, frames, k, bpy.data.objects[spec["name"] + "_mesh"])
+        import build_raccoon_jobs as J                      # the job clips (work_chop, work_fish ...), see that file
+        rep = {}
+        # job clips are adult work: the buildings' contact points (water, heap, log) are set for the adult's size,
+        # the elder keeps his cane, and a kit doesn't swing an axe (see raccoon/INTEGRATION.md)
+        for name in (J.JOBS if spec is ADULT else []):
+            J.bake_job(rig, bpy.data.objects[spec["name"] + "_mesh"], name, k, rep)
+        print("STAT", spec["name"], "job clips, worst paw miss (m):", {n: round(v, 4) for n, v in rep.items() if not isinstance(v, list)})
         suffix = spec["name"].replace("chr_raccoon", "")
         bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / f"chr_raccoon_animated{suffix}.blend"), relative_remap=True)
         sys.argv = [sys.argv[0], "--", str(ROOT / "export")]

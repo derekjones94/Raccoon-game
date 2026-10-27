@@ -42,9 +42,18 @@ def main():
             o.hide_set(False)
             o.select_set(True)
         bpy.context.view_layer.objects.active = ob
+        moving = [o for o in ob.children_recursive if o.animation_data and o.animation_data.nla_tracks]
+        if ob.name.startswith("chr_"):
+            anim = dict(export_animations=True)
+        elif moving:
+            # buildings: every part's "idle" track becomes one glTF animation "idle" (same for "work"); keep the
+            # channels of parts that hold still in a clip, so switching clips always resets them
+            anim = dict(export_animations=True, export_merge_animation="NLA_TRACK",
+                        export_optimize_animation_size=False, export_optimize_animation_keep_anim_object=True)
+        else:
+            anim = dict(export_animations=False)
         bpy.ops.export_scene.gltf(filepath=str(out / f"{ob.name}.glb"), export_format="GLB", use_selection=True,
-                                  export_yup=True, export_apply=True,
-                                  export_animations=ob.name.startswith("chr_"))
+                                  export_yup=True, export_apply=True, **anim)
         ob.location = loc
         done.append(ob.name)
     print(f"exported {len(done)} asset(s) to {out}: {', '.join(done)}")

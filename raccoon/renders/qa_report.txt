@@ -58,3 +58,10 @@ sneak  OK    limb into body  5.7 mm (arm_R @ 8, near upperarm.r joint, z 0.253) 
 sleep  OK    limb into body 10.7 mm (arm_R @ 0, near upperarm.r joint, z 0.206 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN
 
+
+== chr_raccoon job clips (batch 1; adults only: kits and the elder have none)
+work_chop    OK    limb into body 11.9 mm (arm_R @ 16, near upperarm.r joint, z 0.207 = joint crease, ok) | under the floor (mm): none
+work_fish    OK    limb into body  5.7 mm (arm_R @ 12, near upperarm.r joint, z 0.173) | under the floor (mm): none
+work_scrub   OK    limb into body  6.6 mm (thigh_R @ 18, near upperleg.r joint, z 0.055 = joint crease, ok) | under the floor (mm): none
+work_rummage OK    limb into body  7.0 mm (arm_R @ 36, near upperarm.r joint, z 0.153 = joint crease, ok) | under the floor (mm): none
+ALL CLEAN

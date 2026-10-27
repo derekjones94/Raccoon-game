@@ -2,6 +2,9 @@
 
 Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoon/export/`**, one `.glb` per asset.
 
+- **[`raccoon/INTEGRATION.md`](raccoon/INTEGRATION.md):** how to wire up the animated buildings. It covers where raccoons stand and which way they face (`spot_` markers), how to attach tools so the axe hits with its edge and the rod points at the water, and which clip plays at which building.
+- **[`raccoon/ANIMATION_TRACKER.md`](raccoon/ANIMATION_TRACKER.md):** which buildings are animated and which are still to do.
+
 ## Conventions
 
 - 1 m = 1 Godot unit = 1 grid cell. Footprints are whole cells, inset 0.03 m.
@@ -21,8 +24,10 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 | `chr_weasel.glb` | Weasel rival, about 0.43 m |
 | `chr_dragon.glb` | Sleeping dragon on its hoard, about 6×4 cells |
 | `prop_cane.glb` | The elder's cane, attached to the hand slot |
-| `bld_stockpile_2x2`, `bld_rummage_camp_2x2`, `bld_fence_stall_2x2`, `bld_washing_pool_2x1`, `bld_woodpile_1x1`, `bld_tinker_bench_1x1`, `bld_guild_hall_3x3` | Buildings |
-| `bld_den_2x2` | Raccoon family den: hollow stone hut with three beds, a stove, a table and a shelf inside, plus a doorway and three windows. Its roof is a child node, `bld_den_2x2_roof`: hide it to look inside (for example when the camera is close or a raccoon is home). |
+| `prop_axe.glb`, `prop_fishing_rod.glb` | Work tools, built in hand-slot space. Attach to `handslot.r` with no offset (see `INTEGRATION.md`). |
+| `bld_woodpile_1x1`, `bld_fishing_spot_1x2`, `bld_washing_pool_2x1`, `bld_rummage_camp_2x2` | Animated working buildings (`idle` and `work` clips, a `spot_work` marker), rebuilt in batch 1 |
+| `bld_stockpile_2x2`, `bld_fence_stall_2x2`, `bld_tinker_bench_1x1`, `bld_guild_hall_3x3` | Buildings (animation comes in later batches) |
+| `bld_den_2x2` | Raccoon family den: hollow stone hut with three beds, a stove, a table and a shelf inside, plus a doorway and three windows. Its roof is a child node, `bld_den_2x2_roof`: hide it to look inside (for example when the camera is close or a raccoon is home). It has `idle` and `work` (someone asleep) clips and `spot_sleep_1` to `_3` markers. |
 | `kit_floor_stone`, `kit_wall_stone`, `kit_wall_stone_corner`, `kit_wall_stone_door`, `kit_ramp_stone`, `kit_stairs_stone`, `kit_scaffold_wood`, `kit_ladder_wood` | Tunnel kit pieces |
 | `prop_barrel`, `prop_crate`, `prop_gemchest`, `prop_goldpile`, `prop_mushrooms`, `prop_torch` | Props |
 
@@ -30,6 +35,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 
 - **Skeleton.** The raccoon, kit, elder and weasel share one 30-bone skeleton, matching the KayKit `Rig_Medium` bone names. Rest pose is an A-pose. Hand slots are `handslot.l` and `handslot.r`.
 - **Animations.** All four have the same six looping animations: `idle` (48 frames), `walk` (20), `carry` (24), `work` (24), `sneak` (32), `sleep` (72), all at 24 fps. Feet stay on the floor (y = 0).
+- **Job clips.** The adult `chr_raccoon` also has `work_chop` (32), `work_fish` (96), `work_scrub` (48) and `work_rummage` (48), made for its buildings. Kits and the elder don't do these jobs (see `INTEGRATION.md`).
 - **Retargeting.** Since the bones match, one AnimationLibrary works on all four, and KayKit animations can be retargeted onto them.
 - **Dragon.** Its own 26-bone rig, with two animations: `idle` (a 4 s breathing loop) and `stir` (a 6 s one-shot that starts and ends on the rest pose). `breath_chest`, `breath_spine` and `breath_hips` are leaf bones that only scale for breathing; leave them alone. The hoard is a separate mesh, `chr_dragon_hoard`, inside the same file.
 - **Tools.** Attach a held tool with a `BoneAttachment3D` on `handslot.r` (or `.l`), with no offset. The tool's grip is its origin and the handle runs along the slot's +Y.
@@ -37,7 +43,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 
 ## Other folders
 
-- `raccoon/*.blend` – Blender 4.5 sources.
+- `raccoon/*.blend` – Blender sources. Most were saved from 4.5; files rebuilt since batch 1 (den, the four working buildings, the raccoon animation files, `tools.blend`) were saved from 5.1. Blender 4.5 LTS opens 5.x files.
 - `raccoon/tools/` – the Python scripts that build and export everything. Run them with the `bpy` module. `export_assets.py` writes the GLBs.
-- `raccoon/renders/` – preview images and GIFs, plus `qa_report.txt` (the rig and animation checks).
+- `raccoon/renders/` – preview images and GIFs (`bld_*_loops.gif`: each building's `idle` then `work` loop), plus `qa_report.txt` (the rig and animation checks) and `qa_buildings.txt` (the building clipping checks).
 - `raccoon/textures/palette.json` – swatch names and their grid positions.

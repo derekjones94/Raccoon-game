@@ -2,7 +2,7 @@
 
 1) rig vs chr_raccoon: same bones/parents, bone directions at rest (angle between Y axes), A-pose arm angle
 2) hand slots: unweighted, +Y axis pointing forward in the game look (HANG)
-3) every frame of every action: limb parts passing INTO the body / head (depth > 6 mm), anything below the floor
+3) every frame of every action (and every job clip; --jobs: only those): limb parts passing INTO the body / head (depth > 6 mm), anything below the floor
 
 Run:  python3 tools/check_character.py chr_weasel.blend chr_weasel
 """
@@ -124,7 +124,11 @@ for v in me.vertices:
         buried.add(v.index)
 ev.to_mesh_clear()
 ALL_OK = True
-for act in AN.ACTIONS:
+import build_raccoon_jobs as J  # noqa: E402
+CLIPS = [a for a in list(AN.ACTIONS) + list(J.JOBS) if a in bpy.data.actions]
+if "--jobs" in sys.argv:
+    CLIPS = [a for a in CLIPS if a in J.JOBS]
+for act in CLIPS:
     frames = int(bpy.data.actions[act].frame_range[1])
     worst = (0.0, 0, "", "")
     low = {}
@@ -148,6 +152,6 @@ for act in AN.ACTIONS:
     if crease and worst[0] > 0.006:
         worst = (worst[0], worst[1], worst[2], worst[3] + " = joint crease, ok")
     ALL_OK &= ok
-    print(f"{act:6s} {'OK   ' if ok else 'CHECK'} limb into body {worst[0] * 1000:4.1f} mm ({worst[2]} @ {worst[1]}, {worst[3]})"
+    print(f"{act:12s} {'OK   ' if ok else 'CHECK'} limb into body {worst[0] * 1000:4.1f} mm ({worst[2]} @ {worst[1]}, {worst[3]})"
           f" | under the floor (mm): {under or 'none'}")
 print("ALL CLEAN" if ALL_OK else "ISSUES FOUND")
