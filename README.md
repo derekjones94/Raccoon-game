@@ -21,7 +21,8 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 | `chr_weasel.glb` | Weasel rival, about 0.43 m |
 | `chr_dragon.glb` | Sleeping dragon on its hoard, about 6×4 cells |
 | `prop_cane.glb` | The elder's cane, attached to the hand slot |
-| `bld_den_2x2`, `bld_stockpile_2x2`, `bld_rummage_camp_2x2`, `bld_fence_stall_2x2`, `bld_washing_pool_2x1`, `bld_woodpile_1x1`, `bld_tinker_bench_1x1`, `bld_guild_hall_3x3` | Buildings |
+| `bld_stockpile_2x2`, `bld_rummage_camp_2x2`, `bld_fence_stall_2x2`, `bld_washing_pool_2x1`, `bld_woodpile_1x1`, `bld_tinker_bench_1x1`, `bld_guild_hall_3x3` | Buildings |
+| `bld_den_2x2` | Raccoon family den: hollow stone hut with three beds, a stove, a table and a shelf inside, plus a doorway and three windows. Its roof is a child node, `bld_den_2x2_roof`: hide it to look inside (for example when the camera is close or a raccoon is home). |
 | `kit_floor_stone`, `kit_wall_stone`, `kit_wall_stone_corner`, `kit_wall_stone_door`, `kit_ramp_stone`, `kit_stairs_stone`, `kit_scaffold_wood`, `kit_ladder_wood` | Tunnel kit pieces |
 | `prop_barrel`, `prop_crate`, `prop_gemchest`, `prop_goldpile`, `prop_mushrooms`, `prop_torch` | Props |
 

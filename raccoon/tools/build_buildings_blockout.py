@@ -103,27 +103,10 @@ def log(m, c, r, length, axis=(1, 0, 0)):
 
 # ---------------------------------------------------------------- buildings
 def bld_den_2x2(coll, rnd):
-    """Cozy burrow hut: round rough-stone wall, plank cone roof, a shield for a door, goblet planter."""
-    m = M()
-    m.cyl(Vector((0, 0, 0.04)), 0.94, 0.08, "stone_dark", segs=10)
-    m.cyl(Vector((0, 0, 0.29)), 0.84, 0.42, "stone_mid", cap="stone_light", segs=10)
-    m.cyl(Vector((0, 0, 0.75)), 0.88, 0.5, "wood_mid", r2=0.06, segs=10, rot=0.1)   # small overhang: door stays visible            # plank cone roof
-    m.cyl(Vector((0, 0, 0.525)), 0.89, 0.05, "wood_dark", segs=10, rot=0.1)                    # eave ring
-    m.obox(Vector((-0.4, -0.33, 0.73)), (0.26, 0.2, 0.03), "cloth_red", rot=(0.45, 0, 0.3))     # roof patch
-    m.cyl(Vector((0.42, 0.25, 0.84)), 0.06, 0.32, "rust", cap="rust_dark", segs=8)                # junk stovepipe
-    m.cyl(Vector((0.42, 0.25, 1.0 - 0.025)), 0.09, 0.05, "iron_dark", segs=8)                     # pot-lid cap
-    # doorway: dark opening + the shield door propped open beside it
-    m.obox(Vector((0, -0.85, 0.21)), (0.36, 0.1, 0.42), "stone_deep")               # opening, proud of the wall
-    m.obox(Vector((0, -0.86, 0.45)), (0.5, 0.12, 0.08), "wood_dark")                             # lintel
-    m.cyl(Vector((0.36, -0.84, 0.24)), 0.22, 0.05, "iron_light", cap="cloth_blue", axis=(0.35, -1, 0), segs=12)
-    m.cyl(Vector((0.36, -0.875, 0.24)), 0.06, 0.04, "gold", axis=(0.35, -1, 0), segs=8)          # shield boss
-    # stolen goblet as a planter
-    m.cyl(Vector((-0.5, -0.72, 0.05)), 0.07, 0.1, "gold_dark", segs=8, r2=0.03)
-    m.cyl(Vector((-0.5, -0.72, 0.16)), 0.025, 0.14, "gold", segs=6)
-    m.cyl(Vector((-0.5, -0.72, 0.28)), 0.05, 0.12, "gold", r2=0.09, segs=8)
-    m.blob(Vector((-0.5, -0.72, 0.36)), Vector((0.1, 0.1, 0.08)), "moss", 8, 4)
-    m.obox(Vector((0, -0.88, 0.006)), (0.4, 0.1, 0.012), "cloth_red")                      # doormat
-    return m.obj("bld_den_2x2", coll)
+    """The den has its own script now (hollow, lived-in, roof as a separate child node): see build_den.py."""
+    import build_den
+    den, _ = build_den.build(coll)
+    return den
 
 
 def bld_stockpile_2x2(coll, rnd):
