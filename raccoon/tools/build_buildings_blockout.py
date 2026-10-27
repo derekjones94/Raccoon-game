@@ -274,7 +274,8 @@ def bld_guild_hall_3x3(coll, rnd):
 # overwrite the animated .glb with this early blockout)
 OWN_SCRIPT = {"bld_den_2x2": "build_den.py", "bld_stockpile_2x2": "build_stockpile.py",
               "bld_rummage_camp_2x2": "build_rummage_camp.py", "bld_woodpile_1x1": "build_woodpile.py",
-              "bld_washing_pool_2x1": "build_washing_pool.py", "bld_tinker_bench_1x1": "build_tinker_bench.py"}
+              "bld_washing_pool_2x1": "build_washing_pool.py", "bld_tinker_bench_1x1": "build_tinker_bench.py",
+              "bld_guild_hall_3x3": "build_guild_hall.py"}
 
 BUILDINGS = [  # (fn, W, D, H, showcase position = footprint centre)
     (bld_den_2x2, 2, 2, 1, (0.5, 0.5)),

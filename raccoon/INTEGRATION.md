@@ -5,6 +5,7 @@ Notes for wiring the animated buildings and the raccoons' job clips into the gam
 - **Batch 1:** woodpile, fishing spot, washing pool, rummage camp, den.
 - **Batch 2:** farm, cave garden, stockpile, cold cellar, rubble heap. The farm, cave garden, cold cellar and rubble heap replace stand-ins with new models; the stockpile replaces our early blockout.
 - **Batch 3:** smelter, brewery, tinker bench, fence stall, trash bin. The smelter, brewery and trash bin replace stand-ins; the tinker bench and the fence stall were rebuilt at raccoon size (the old bench top was as tall as a raccoon, and the old counter was out of reach).
+- **Batch 4:** patio bar, infirmary, map room, training nook, guild hall. All replace stand-ins; the guild hall is a full overhaul, hollow like the den, with a roof the game can hide.
 
 `raccoon/ANIMATION_TRACKER.md` lists what is done and what is next.
 
@@ -14,7 +15,12 @@ Every animated building contains invisible marker nodes:
 
 | Node | Where |
 |---|---|
-| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp, farm, cave garden, stockpile, cold cellar, rubble heap, smelter, brewery, tinker bench, fence stall, trash bin |
+| `spot_work` | Woodpile, fishing spot, washing pool, rummage camp, farm, cave garden, stockpile, cold cellar, rubble heap, smelter, brewery, tinker bench, fence stall, trash bin, infirmary (the healer) |
+| `spot_seat_1` to `_5` | Patio bar: five seats round the fire |
+| `spot_patient_1`, `_2` | Infirmary: the two cots |
+| `spot_work_1`, `_2` | Map room: either side of the map table |
+| `spot_elder`, `spot_kit_1` to `_3` | Training nook: the elder at the slate, the kits on their cushions |
+| `spot_gather_1` to `_4` | Guild hall: round the war table |
 | `spot_sleep_1`, `spot_sleep_2`, `spot_sleep_3` | Den. Beds 1 and 2 are adult beds; bed 3 is the kit's bed. |
 
 To put a raccoon to work, copy the marker's **global transform**, position and rotation, onto the raccoon's root. Add no offset, no extra turn and no `look_at`:
@@ -38,6 +44,8 @@ raccoon.global_transform = spot.global_transform
 | `prop_watering_can.glb` | Farm | `work_water` |
 | `prop_ladle.glb` | Brewery | `work_stir` |
 | `prop_hammer.glb` | Tinker bench | `work_hammer` |
+| `prop_mug.glb` | Patio bar | `work_drink` |
+| `prop_pestle.glb` | Infirmary | `work_grind` |
 
 To attach a tool:
 1. Add a `BoneAttachment3D` on the raccoon's skeleton, bone **`handslot.r`**.
@@ -49,6 +57,8 @@ Each tool is built in the hand slot's own space:
 - **The axe's sharp edge points along +X.**
 - **The watering can is carried by its top handle.** The handle runs along +Y toward the spout, and the can hangs below it (-Z).
 - **The hammer's striking face points along +X**, like the axe's edge. The ladle's bowl is at the +Y end.
+- **The mug is held round its body**, not by its handle: its open top points along +Y. A raccoon's arms are too short to hold a mug out by the handle and still reach its mouth.
+- **The elder's cane** (`prop_cane.glb`) stays in his right paw in `work_teach`, attached the same way as always.
 
 `work_chop` was built against exactly this frame, so the edge lands on the log first. If the game uses a different axe model, such as a KayKit one, its blade sits differently in the slot. That is why the axe struck with its blunt end. Use `prop_axe.glb`, or rotate the other axe in your scene to match it: edge along +X, handle along +Y.
 
@@ -73,6 +83,13 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_tinker_bench_1x1` | `spot_work` (at the bench) | `work_hammer` (32) | `prop_hammer` | `work` (32) |
 | `bld_fence_stall_2x2` | `spot_work` (on the stool behind the counter) | `work_haggle` (48) | none | `work` (48) |
 | `bld_trash_bin_1x1` | `spot_work` (behind the spill) | `work_rummage` (48) | none | `work` (48) |
+| `bld_patio_bar_2x2` | `spot_seat_1` to `_5` (sitting, facing the fire) | `work_drink` (96) or `work_chat` (96) | `prop_mug` with `work_drink` | `work` (96) while anyone's there |
+| `bld_infirmary_2x2` | `spot_work` (the healer) | `work_grind` (48) | `prop_pestle` | `work` (48) |
+| `bld_infirmary_2x2` | `spot_patient_1`, `_2` (on the cots) | `sleep` (72, the base clip) | none | (any) |
+| `bld_map_room_2x2` | `spot_work_1`, `_2` | `work_read` (48) | none | `work` (48) |
+| `bld_training_nook_2x2` | `spot_elder` | `work_teach` (96), on `chr_raccoon_elder` | `prop_cane` (as always) | `work` (96) |
+| `bld_training_nook_2x2` | `spot_kit_1` to `_3` | `work_listen` (96), on `chr_raccoon_kit` | none | |
+| `bld_guild_hall_3x3` | `spot_gather_1` to `_4` (round the war table) | `work_read` (48) | none | `work` (96) while a crew is gathered |
 
 All clips are 24 fps and loop.
 
@@ -91,6 +108,9 @@ All clips are 24 fps and loop.
 - **Tinker bench:** sparks jump off the bar on the hammer's taps (frames 0 and 16).
 - **Fence stall:** the stack of coins jumps when the Fence taps it (frames 17 and 22), and the scale tips.
 - **Trash bin:** the banana peel and a can on the heap jump as the paws dig; the lid rattles.
+- **Training nook:** the slate rattles when the elder taps it (frames 23 and 30), so start his `work_teach` with the building's `work`. The kits' `work_listen` can start whenever.
+- **Infirmary:** the medicine in the mortar swirls with the pestle (two turns a loop).
+- **Patio bar, map room, guild hall:** nothing in the building is tied to one raccoon. Start each raccoon's clip when it sits down or arrives. Offsetting them, and mixing `work_drink` with `work_chat` at the bar, looks livelier than everyone moving in step.
 
 If you can't keep them in sync, the buildings still look right on their own. You just lose the hit lining up with the chips, and the bite with the ears.
 
@@ -112,14 +132,17 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Rubble heap:** the raccoon sorts the heap with the same `work_rummage` clip as at the rummage camp. So does the trash bin: the raccoon digs into the spill from a tipped-over can.
 - **Fence stall:** the Fence stands on its stool behind the counter, with the counter top at paw height. Customers stand at the front of the counter. There's no customer spot yet; tell me if you want one.
 - **Tinker bench:** a low bench the raccoon crouches at, sized for a 0.4 m raccoon.
+- **Patio bar:** up to five raccoons at once, sitting on rugs round the fire pit (`spot_seat_1` to `_5`). Seated raccoons sit on the floor with their legs out in front, so the seats are on the ground, not on stools. Adults only for now (see section 6).
+- **Infirmary:** patients sit propped up and doze on the cots with the base `sleep` clip. Each cot is sized for the whole sleeping raccoon, tail included, like the den's beds.
+- **Guild hall:** the roof is the child node **`bld_guild_hall_3x3_roof`**, with a ceiling under it. Hide it to look inside, as with the den. The chimney smoke is the roof's child, so it hides with it. The walls stop at 0.52 m so the inside reads from the game camera.
 
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have all eleven job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`.
-- **Kits** (`chr_raccoon_kit`) have none. The buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air. It also shouldn't swing an axe.
-- **The elder** (`chr_raccoon_elder`) has none. He keeps his cane in his right paw, and these poses would need their own versions for his hunched posture.
+- **Adults** (`chr_raccoon`) have fifteen job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`.
+- **Kits** (`chr_raccoon_kit`) have one: `work_listen` (training nook). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
+- **The elder** (`chr_raccoon_elder`) has one: `work_teach` (training nook), leaning on his cane with his right paw and teaching with his left.
 
-If the game gives a kit or the elder one of these jobs, play their generic `work` clip at the spot, or keep them off these jobs.
+If the game gives a kit or the elder an adult job, play their generic `work` clip at the spot, or keep them off those jobs. The patio bar's drink and chat clips are adult-only for now; kits and the elder could get their own versions later.
 
 Everything else on the characters (bones, the six base clips, `prop_cane` on the elder) is unchanged. The six base clips were compared channel by channel with the previous export and are identical.
 
@@ -136,7 +159,7 @@ The only allowed contacts are the intended ones:
 - the rod tip at the line;
 - the watering can's spout at its water stream;
 - the hammer on the bar it works, the ladle in the brew;
-- paws in the water, the heaps, the planter's soil, the goods in the crates, the bellows handle, the counter and its coins, the bar on the bench;
+- paws in the water, the heaps, the planter's soil, the goods in the crates, the bellows handle, the counter and its coins, the bar on the bench, the maps, the mortar, the elder's slate;
 - the wader's legs in the water.
 
 Results are in `renders/qa_buildings.txt`. The job clips also pass the character check (`renders/qa_report.txt`): no limb into the body or head, nothing under the floor.

@@ -1,6 +1,7 @@
 """Raccoon actions: idle, walk, carry, work, sneak, sleep -- 24 fps, in place, every one a seamless loop -- plus the
 job clips from build_raccoon_jobs.py (work_chop, work_fish, work_scrub, work_rummage, work_water, work_tend,
-work_stash, work_pump, work_stir, work_hammer, work_haggle).
+work_stash, work_pump, work_stir, work_hammer, work_haggle, work_drink, work_chat, work_grind, work_read;
+the elder's work_teach, the kit's work_listen).
 Bones follow KayKit Rig_Medium names (upperarm.l, lowerarm.l, wrist.l, hand.l, handslot.l, upperleg.l ...).
 
 Each action is a function of the loop phase p in [0, 1): it returns rotations per bone (armature-space axis, degrees,
@@ -316,9 +317,9 @@ def main():
             bake_action(rig, name, fn, frames, k, bpy.data.objects[spec["name"] + "_mesh"])
         import build_raccoon_jobs as J                      # the job clips (work_chop, work_fish ...), see that file
         rep = {}
-        # job clips are adult work: the buildings' contact points (water, heap, log) are set for the adult's size,
-        # the elder keeps his cane, and a kit doesn't swing an axe (see raccoon/INTEGRATION.md)
-        for name in (J.JOBS if spec is ADULT else []):
+        # job clips belong to one raccoon each (build_raccoon_jobs.JOB_RIG): almost all are adult work (the buildings'
+        # contact points are set for the adult's size, and a kit doesn't swing an axe); the elder teaches, kits listen
+        for name in [n for n in J.JOBS if J.rig_of(n) == spec["name"]]:
             J.bake_job(rig, bpy.data.objects[spec["name"] + "_mesh"], name, k, rep)
         print("STAT", spec["name"], "job clips, worst paw miss (m):", {n: round(v, 4) for n, v in rep.items() if not isinstance(v, list)})
         suffix = spec["name"].replace("chr_raccoon", "")

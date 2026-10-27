@@ -27,3 +27,13 @@
 == bld_tinker_bench_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_trash_bin_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_patio_bar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_guild_hall_3x3: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_infirmary_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_map_room_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_training_nook_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

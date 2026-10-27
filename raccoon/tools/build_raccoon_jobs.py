@@ -11,6 +11,12 @@
   work_stir     standing at a cauldron, ladle in the right paw: slow circles through the brew
   work_hammer   crouched at a low bench, a small hammer in the right paw: tap, tap on the piece the left paw holds
   work_haggle   standing on a stool behind a counter: rubs its paws, taps the coins twice, wags a claw "no"
+  work_drink    sitting on a cushion, a mug in the right paw: sips, rests it on the knee, laughs (patio bar)
+  work_chat     sitting on a cushion, no mug: talks with its paws, slaps its knee laughing (patio bar)
+  work_grind    crouched by a mortar on a stand at its right foot, grinding medicine with a pestle
+  work_read     crouched over a map on a low table, paws holding it flat, the right paw tracing a route
+  work_teach    THE ELDER: leaning on his cane (right paw), points at a slate with his left, turns to the class
+  work_listen   A KIT: sitting on the floor listening, nods, ears up, now and then puts a paw up to ask
 
 How they are made: every frame the body is posed (rotations like the other actions), the feet (or the seat) are
 planted on the floor, then each arm is solved with a two-bone IK so the hand slot lands exactly on its target:
@@ -87,6 +93,7 @@ def arm_rots(rig, side, grip, Ts=None, pole=None):
     a, b = (tu - hu).length, (tl - hl).length
     S = rig.pose.bones[f"upperarm.{sd}"].head.copy()
     out = LEFT if sd == "l" else -LEFT
+    w_pole = 0.05 if pole is None else 0.5             # an explicit pole steers a tool arm's elbow harder
     pole = V(pole) if pole is not None else (out * 0.6 - UP * 1.0 + V((0, 0.4, 0)))
     W = grip.copy()
     D = None
@@ -117,7 +124,7 @@ def arm_rots(rig, side, grip, Ts=None, pole=None):
                 ph = TAU * k / 72
                 Ek = C + (u_ * math.cos(ph) + v_ * math.sin(ph)) * h
                 fore = (S + di * Lc - Ek).normalized()
-                score = abs(fore.dot(hd)) + 0.05 * (1 - math.cos(ph))
+                score = abs(fore.dot(hd)) + w_pole * (1 - math.cos(ph))
                 if best is None or score < best[0]:
                     best = (score, Ek)
             E = best[1]
@@ -485,6 +492,150 @@ def haggle(p):
     return rots, 0.0, "legs", {"r": (pr, None, None), "l": (pl, None, None)}
 
 
+SEAT_LEGS = {"upperleg.l": [(Y, -30), (X, -72)], "upperleg.r": [(Y, 30), (X, -72)],      # sitting, legs out in front
+             "lowerleg.l": [(X, 40)], "lowerleg.r": [(X, 40)], "foot.l": [(X, 10)], "foot.r": [(X, 10)]}
+KNEE_L, KNEE_R = loc(f=0.09, u=0.085, l=0.038), loc(f=0.09, u=0.085, l=-0.038)
+DRINK_REST = loc(f=0.08, u=0.12, l=-0.07)               # the mug resting on top of the right knee (grip)
+SIP_RIM = loc(f=0.112, u=0.148, l=-0.034)             # the mug's rim at a sip: just under the chin
+SIP_TILT = 15.0
+
+
+def mug_frame(tilt):
+    """Mug held by its handle, body ahead of the paw, tipped toward the mouth by `tilt` degrees."""
+    th = math.radians(tilt)
+    y = UP * math.cos(th) - FWD * math.sin(th)
+    x = FWD * math.cos(th) + UP * math.sin(th)
+    return frame_yx(y, x)
+
+
+def _sip_grip():
+    Tm = mug_frame(SIP_TILT)
+    return SIP_RIM - Tm @ (T.MUG_C + V((0, T.MUG_H / 2, 0)))
+
+
+DRINK_SIP = _sip_grip()
+
+def drink(p):
+    """Sitting at the patio bar: a long sip, the mug down on the knee, a chat and a laugh (the free paw gestures),
+    another sip. 96 frames."""
+    sip = ramp(p, 0.04, 0.14) * (1 - ramp(p, 0.3, 0.4)) + ramp(p, 0.68, 0.78) * (1 - ramp(p, 0.9, 0.98))
+    laugh = ramp(p, 0.45, 0.5) * (1 - ramp(p, 0.58, 0.64))
+    shake = laugh * math.sin(TAU * 10 * p)
+    grip = DRINK_REST.lerp(DRINK_SIP, sip)
+    Ts = mug_frame(SIP_TILT * sip)
+    gest = ramp(p, 0.4, 0.46) * (1 - ramp(p, 0.6, 0.66))
+    pl = KNEE_L.lerp(loc(f=0.1, u=0.16, l=0.085) + loc(u=0.01 * shake), gest)
+    rots = act(SEAT_LEGS, {
+        "spine": [(X, 4 - 5 * laugh)], "chest": [(X, 3 - 4 * laugh)],
+        "head": [(X, 8 - 4 * sip - 14 * laugh + 3 * shake), (Z, 6 * math.sin(TAU * p) * (1 - sip))],
+        "ear.l": [(Y, 14 + 10 * laugh)], "ear.r": [(Y, -14 - 10 * laugh)],
+        "tail_1": [(X, -40)], "tail_2": [(X, -15)],
+    }, tail_sway(p, 7, 2, 0.12))
+    return rots, -0.05, "seat", {"r": (grip, Ts, None), "l": (pl, None, None)}
+
+
+def chat(p):
+    """Sitting at the patio bar without a mug: talks with its paws (one, then the other, then both: 'and THEN...'),
+    a big laugh with a slap of the knee. 96 frames."""
+    a = ramp(p, 0.05, 0.12) * (1 - ramp(p, 0.26, 0.32))
+    b = ramp(p, 0.3, 0.36) * (1 - ramp(p, 0.5, 0.56))
+    both = ramp(p, 0.55, 0.6) * (1 - ramp(p, 0.68, 0.72))
+    laugh = ramp(p, 0.74, 0.78) * (1 - ramp(p, 0.92, 0.98))
+    slap = sum(math.exp(-((p - c) ** 2) / 0.0004) for c in (0.8, 0.86))
+    wob = 0.008 * math.sin(TAU * 6 * p)
+    pr = KNEE_R.lerp(loc(f=0.11, u=0.165 + wob, l=-0.075), max(a, both)) + loc(u=0.03 * (1 - slap) * laugh)
+    pl = KNEE_L.lerp(loc(f=0.11, u=0.165 - wob, l=0.075), max(b, both))
+    rots = act(SEAT_LEGS, {
+        "spine": [(X, 6 - 10 * laugh)], "chest": [(X, 4 - 6 * laugh), (Z, 6 * (a - b))],
+        "head": [(X, 6 - 16 * laugh + 4 * slap), (Z, 10 * (a - b) + 4 * math.sin(TAU * 2 * p))],
+        "ear.l": [(Y, 14 + 8 * laugh)], "ear.r": [(Y, -14 - 8 * laugh)],
+        "tail_1": [(X, -40)], "tail_2": [(X, -15)],
+    }, tail_sway(p, 8, 2, 0.12))
+    return rots, -0.05, "seat", {"r": (pr, None, None), "l": (pl, None, None)}
+
+
+MORTAR_C = loc(f=0.124, u=0.074, l=-0.098)             # the bottom of the mortar bowl: on a stone stand by the right foot
+GRIND_R = 0.012
+
+
+def grind(p):
+    """Crouched by a mortar on a little stand beside its right foot: the pestle grinds round it (two turns a loop), the
+    left paw on the knee."""
+    a = TAU * 2 * p
+    tip = MORTAR_C + loc(f=GRIND_R * math.cos(a), l=GRIND_R * math.sin(a))
+    up = (UP * 1.0 - FWD * 0.15 - LEFT * 0.25).normalized()              # handle leans back and out, off the face
+    grip = tip + up * T.PESTLE_TIP.y
+    Ts = frame_yz(tip - grip, FWD)
+    rots = act({
+        "upperleg.l": [(Y, -16), (X, -62)], "upperleg.r": [(Y, 16), (X, -62)],
+        "lowerleg.l": [(X, 86)], "lowerleg.r": [(X, 86)], "foot.l": [(X, -24)], "foot.r": [(X, -24)],
+        "spine": [(X, 32), (Y, 6)], "chest": [(X, 14), (Z, -3 * math.sin(a))], "head": [(X, -10), (Z, 4 * math.sin(a))],
+        "ear.l": [(Y, 10)], "ear.r": [(Y, -10)],
+        "tail_1": [(X, -25)],
+    }, tail_sway(p, 5, 1))
+    return rots, 0.0, "legs", {"r": (grip, Ts, -LEFT * 1.0 - UP * 0.2), "l": (loc(f=0.085, u=0.11, l=0.055), None, None)}
+
+
+READ_C = loc(f=0.112, u=0.094)                         # the map, on a low table
+
+
+def read(p):
+    """Crouched over a map: the left paw holds it flat, the right paw traces a route out and back; the head follows,
+    a pause to think (ear flick)."""
+    t = ramp(p, 0.05, 0.4) * (1 - ramp(p, 0.6, 0.95))
+    route = [loc(l=-0.05, f=0.0), loc(l=-0.035, f=0.018), loc(l=-0.018, f=0.006), loc(l=-0.006, f=0.02)]
+    k = t * (len(route) - 1)
+    i = min(int(k), len(route) - 2)
+    pr = READ_C + route[i].lerp(route[i + 1], k - i)
+    think = ramp(p, 0.42, 0.47) * (1 - ramp(p, 0.55, 0.6))
+    rots = act({
+        "upperleg.l": [(Y, -16), (X, -62)], "upperleg.r": [(Y, 16), (X, -62)],
+        "lowerleg.l": [(X, 86)], "lowerleg.r": [(X, 86)], "foot.l": [(X, -24)], "foot.r": [(X, -24)],
+        "spine": [(X, 26)], "chest": [(X, 14)], "head": [(X, -4 + 6 * think), (Z, -10 + 30 * t)],
+        "ear.l": [(Y, 12 - 16 * think)], "ear.r": [(Y, -12)],
+        "tail_1": [(X, -25)],
+    }, tail_sway(p, 5, 1))
+    return rots, 0.0, "legs", {"r": (pr + loc(u=0.004 * (1 - think)), None, None),
+                               "l": (READ_C + loc(l=0.045, f=0.0), None, None)}
+
+
+TEACH_BOARD = loc(f=0.07, u=0.2, l=0.135)              # where the elder's claw taps the slate (to his left)
+
+
+def teach(p):
+    """The elder, leaning on his cane (right paw, left as it hangs): turns to the slate on his left and points at it,
+    taps it twice, turns back to the class with an open paw, a wagging claw for emphasis. 96 frames."""
+    board = ramp(p, 0.04, 0.14) * (1 - ramp(p, 0.42, 0.5))
+    taps = sum(math.exp(-((p - c) ** 2) / 0.0005) for c in (0.24, 0.31))
+    talk = ramp(p, 0.5, 0.58) * (1 - ramp(p, 0.9, 0.98))
+    home = loc(f=0.06, u=0.105, l=0.085)
+    point = TEACH_BOARD + loc(l=-0.02 * (1 - taps), f=-0.012 * (1 - taps))
+    open_ = loc(f=0.11, u=0.17, l=0.06) + loc(l=0.01 * math.sin(TAU * 5 * p) * talk)
+    pl = home.lerp(point, board).lerp(open_, talk)
+    rots = act({                                       # legs as in his idle: the cane was fitted to that stance
+        "chest": [(Z, 14 * board)], "head": [(Z, 22 * board - 10 * talk), (X, -6 * board + 4 * taps)],
+        "upperarm.r": [(Y, 5)],                         # the cane arm a touch out from the side, as in his idle
+        "ear.l": [(Y, 10 + 8 * talk)], "ear.r": [(Y, -10 - 8 * talk)],
+    }, tail_sway(p, 5, 1))
+    return rots, 0.0, "legs", {"l": (pl, None, None)}
+
+
+def listen(p):
+    """A kit sitting on the floor, listening: paws on its knees, slow nods, ears up; halfway through it shoots a paw
+    up to ask a question, then settles. 96 frames."""
+    nod = math.sin(TAU * 3 * p) * (1 - ramp(p, 0.5, 0.55)) * 1.0
+    ask = ramp(p, 0.55, 0.6) * (1 - ramp(p, 0.76, 0.82))
+    wave = 0.008 * math.sin(TAU * 8 * p) * ask
+    pr = KNEE_R.lerp(loc(f=0.05, u=0.29, l=-0.11 + wave), ask)
+    rots = act(SEAT_LEGS, {
+        "spine": [(X, 2 - 4 * ask)], "chest": [(X, 2 - 3 * ask), (Z, -5 * ask)],
+        "head": [(X, -6 + 5 * nod - 6 * ask), (Z, 5 * math.sin(TAU * p))],
+        "ear.l": [(Y, 22)], "ear.r": [(Y, -22)],
+        "tail_1": [(X, -40)], "tail_2": [(X, -15)],
+    }, tail_sway(p, 6, 1, 0.12))
+    return rots, -0.05, "seat", {"r": (pr, None, None), "l": (KNEE_L, None, None)}
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -499,7 +650,18 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_stir": (stir, 48, "prop_ladle"),
     "work_hammer": (hammer, 32, "prop_hammer"),
     "work_haggle": (haggle, 48, None),
+    "work_drink": (drink, 96, "prop_mug"),
+    "work_chat": (chat, 96, None),
+    "work_grind": (grind, 48, "prop_pestle"),
+    "work_read": (read, 48, None),
+    "work_teach": (teach, 96, None),
+    "work_listen": (listen, 96, None),
 }
+JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit"}   # everything else: the adult
+
+
+def rig_of(name):
+    return JOB_RIG.get(name, "chr_raccoon")
 
 
 # ---------------------------------------------------------------- keeping paws out of the body

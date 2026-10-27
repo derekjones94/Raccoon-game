@@ -43,30 +43,36 @@ Also new in batch 2:
 - **Job clips** on `chr_raccoon` (adults only): `work_water`, `work_tend`, `work_stash`. The four batch 1 clips and the six base clips are unchanged.
 - Every building is 2,000 triangles or fewer.
 
-## Batch 3: crafting. Done, awaiting your sign-off
+## Batch 3: crafting. Done, signed off
 
 | Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_smelter_2x2` | ✅ rebuilt: round stone furnace with a fire-mouth and chimney, bellows, ore bin, coal, ingot moulds, quench bucket | ✅ fire flickers, smoke drifts | ✅ the bellows pump with the paws, the fire flares, sparks fly up the chimney | `work_pump` (new): crouched, both paws pump the bellows handle | `spot_work` (faces the furnace, +X) | ✅ clean | ⬜ |
-| `bld_brewery_2x2` | ✅ rebuilt: iron cauldron of violet brew over a fire, potion shelf, herb rack, mortar table, smoke bombs, powder sacks | ✅ brew bubbles and steams, fire flickers, herbs sway | ✅ a swirl turns with the ladle, harder boil | `work_stir` + `prop_ladle` (new) | `spot_work` | ✅ clean | ⬜ |
-| `bld_tinker_bench_1x1` | ✅ rebuilt at raccoon size: low bench, a bar being worked, vise, gears, lamp, grindstone, tool rack | ✅ lamp flickers, grindstone turns | ✅ sparks on each tap, grindstone spins | `work_hammer` + `prop_hammer` (new): crouched, taps the bar, the left paw holds it | `spot_work` | ✅ clean | ⬜ |
-| `bld_fence_stall_2x2` | ✅ refit: stool pulled up to the counter, counter at paw height, coin stack and a balance scale | ✅ lantern sways, coin sign turns, scale rocks | ✅ the coins jump on each tap, the scale tips | `work_haggle` (new): on the stool, rubs paws, taps the coins, wags a claw "no" | `spot_work` (on the stool) | ✅ clean | ⬜ |
-| `bld_trash_bin_1x1` | ✅ rebuilt: tipped-over tin can with trash spilling out, its lid on the ground | ✅ flies buzz, the lid rocks now and then | ✅ trash jumps as the paws dig, the lid rattles | `work_rummage` (from batch 1) | `spot_work` | ✅ clean | ⬜ |
+| `bld_smelter_2x2` | ✅ rebuilt: round stone furnace with a fire-mouth and chimney, bellows, ore bin, coal, ingot moulds, quench bucket | ✅ fire flickers, smoke drifts | ✅ the bellows pump with the paws, the fire flares, sparks fly up the chimney | `work_pump` (new): crouched, both paws pump the bellows handle | `spot_work` (faces the furnace, +X) | ✅ clean | ✅ |
+| `bld_brewery_2x2` | ✅ rebuilt: iron cauldron of violet brew over a fire, potion shelf, herb rack, mortar table, smoke bombs, powder sacks | ✅ brew bubbles and steams, fire flickers, herbs sway | ✅ a swirl turns with the ladle, harder boil | `work_stir` + `prop_ladle` (new) | `spot_work` | ✅ clean | ✅ |
+| `bld_tinker_bench_1x1` | ✅ rebuilt at raccoon size: low bench, a bar being worked, vise, gears, lamp, grindstone, tool rack | ✅ lamp flickers, grindstone turns | ✅ sparks on each tap, grindstone spins | `work_hammer` + `prop_hammer` (new): crouched, taps the bar, the left paw holds it | `spot_work` | ✅ clean | ✅ |
+| `bld_fence_stall_2x2` | ✅ refit: stool pulled up to the counter, counter at paw height, coin stack and a balance scale | ✅ lantern sways, coin sign turns, scale rocks | ✅ the coins jump on each tap, the scale tips | `work_haggle` (new): on the stool, rubs paws, taps the coins, wags a claw "no" | `spot_work` (on the stool) | ✅ clean | ✅ |
+| `bld_trash_bin_1x1` | ✅ rebuilt: tipped-over tin can with trash spilling out, its lid on the ground | ✅ flies buzz, the lid rocks now and then | ✅ trash jumps as the paws dig, the lid rattles | `work_rummage` (from batch 1) | `spot_work` | ✅ clean | ✅ |
 
 Also new in batch 3:
 - **Tools:** `prop_ladle.glb`, `prop_hammer.glb`.
 - **Job clips** on `chr_raccoon` (adults only): `work_pump`, `work_stir`, `work_hammer`, `work_haggle`. All earlier clips are unchanged.
 - **Cold cellar (batch 2):** the roof was three overlapping shells; it is now one smooth dome in bands (earth, grass, snow), and the snow drifts on the ground have softer outlines.
 
-## Batch 4: social and care
+## Batch 4: social and care. Done, awaiting your sign-off
 
-| Model | Now | Model work | `idle` | `work` | Raccoon clip / tool | QA | Signed off |
+| Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_patio_bar_2x2` | stand-in | 🔁 rebuild | ⬜ lantern swings | ⬜ mugs | ⬜ drink | ⬜ | ⬜ |
-| `bld_infirmary_2x2` | stand-in | 🔁 rebuild | ⬜ bandages sway | ⬜ kettle steams | ⬜ patch up | ⬜ | ⬜ |
-| `bld_map_room_2x2` | stand-in | 🔁 rebuild | ⬜ maps flutter | ⬜ candle | ⬜ read | ⬜ | ⬜ |
-| `bld_training_nook_2x2` | stand-in | 🔁 rebuild | ⬜ dummy wobbles | ⬜ pointer | ⬜ elder teaches kits | ⬜ | ⬜ |
-| `bld_guild_hall_3x3` | our early blockout | 🔁 refresh | ⬜ banner | ⬜ map board | ⬜ | ⬜ | ⬜ |
+| `bld_patio_bar_2x2` | ✅ rebuilt: round plank deck, fire pit, five rug seats, keg bar, lantern strings, a board game on a crate | ✅ fire flickers, lanterns sway | ✅ the fire burns up with sparks, mugs clink | `work_drink` + `prop_mug` (new), `work_chat` (new): sitting, sipping, talking, laughing | `spot_seat_1` to `_5` | ✅ clean, five at once | ⬜ |
+| `bld_infirmary_2x2` | ✅ rebuilt: two cots, a healer's corner with a mortar on a stand, kettle on a brazier, jar shelf, bandage line | ✅ bandages sway, kettle steams | ✅ the kettle boils (lid rattles), medicine swirls | `work_grind` + `prop_pestle` (new); patients use `sleep` | `spot_work`, `spot_patient_1`, `_2` | ✅ clean, healer and two patients | ⬜ |
+| `bld_map_room_2x2` | ✅ rebuilt: low map table, candle, pin-board of charts with string, bookshelf, globe, barrel of rolled maps | ✅ candle flickers, map corner and charts flutter | ✅ a pin jiggles as plans are made | `work_read` (new): crouched over the map, tracing a route | `spot_work_1`, `_2` | ✅ clean, two readers | ⬜ |
+| `bld_training_nook_2x2` | ✅ rebuilt: slate on an easel with a lock and key in chalk, kit cushions, practice dummy with a purse, books, practice locks | ✅ dummy rocks, purse swings, lantern sways | ✅ the slate rattles on the elder's taps | `work_teach` (new, the elder, cane in hand); `work_listen` (new, kits) | `spot_elder`, `spot_kit_1` to `_3` | ✅ clean, elder and three kits | ⬜ |
+| `bld_guild_hall_3x3` | ✅ overhauled like the den: hollow timber hall on a stone footing, open door, shuttered windows, a roof the game can hide; inside: war table with a raid map, hearth, notice board, trophy shelf, loot corner, tool rack, guild banner | ✅ hearth fire, chimney smoke, banners and torches | ✅ notices flutter, candles burn up | `work_read`: a crew planning round the war table | `spot_gather_1` to `_4` | ✅ clean, a crew of four | ⬜ |
+
+Also new in batch 4:
+- **Tools:** `prop_mug.glb` (held round its body), `prop_pestle.glb`.
+- **Job clips:** the adult gets `work_drink`, `work_chat`, `work_grind`, `work_read`; the elder gets his first job clip, `work_teach`, and the kit gets `work_listen`. All earlier clips are unchanged.
+- **QA:** buildings with several raccoons are also checked raccoon against raccoon (no tail through a neighbour).
+- **Guild hall:** 4,300 triangles: the biggest model so far (3x3, a full interior and a roof).
 
 ## Batch 5: civic and watch
 

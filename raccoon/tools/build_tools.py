@@ -6,11 +6,13 @@ Convention for every tool (same as prop_cane):
   * the axe's sharp edge points along +X; its blunt back (poll) along -X
   * the watering can is carried by its top handle (+Y toward the spout); the can hangs below it, along -Z
   * the hammer's striking face points along +X (like the axe's edge); the ladle's bowl opens toward +Z
+  * the mug is held round its body: its axis runs along +Y (open top at +Y), the paw on its back, the body a touch along +X
+  * the pestle's grinding end is at +Y
 Attach in the game as a child of the raccoon's handslot.r bone with an identity transform; the job clips (work_chop,
 work_fish) were built against exactly this frame, so the axe lands edge-first and the rod points over the water.
 
 Run:  python3 tools/build_tools.py
-Out:  tools.blend, export/prop_axe.glb, prop_fishing_rod.glb, prop_watering_can.glb, prop_hammer.glb, prop_ladle.glb
+Out:  tools.blend, export/prop_axe.glb, prop_fishing_rod.glb, prop_watering_can.glb, prop_hammer.glb, prop_ladle.glb, prop_mug.glb, prop_pestle.glb
 """
 import sys
 from pathlib import Path
@@ -33,6 +35,9 @@ CAN_SPOUT_DIR = V((0.0, 0.08, 0.045)).normalized()   # the way the spout points,
 HAMMER_Y = 0.092                     # centre of the hammer head along the handle
 HAMMER_FACE = V((0.02, HAMMER_Y, 0.0))   # middle of the striking face, slot space
 LADLE_BOWL = V((0.0, 0.15, 0.0))     # centre of the ladle's bowl, slot space
+MUG_C = V((0.021, 0.0, 0.0))         # centre of the mug's body, slot space (its axis runs along Y)
+MUG_R, MUG_H = 0.021, 0.046
+PESTLE_TIP = V((0.0, 0.07, 0.0))      # the pestle's grinding end, slot space
 
 
 def prop_axe(coll):
@@ -107,6 +112,28 @@ def prop_ladle(coll):
     return m.obj("prop_ladle", coll)
 
 
+def prop_mug(coll):
+    """A small wooden tankard held round its body (raccoon paws are too short to hold one out by a handle and still
+    reach the mouth): axis along +Y, the open top toward +Y, a handle on the far side. Frothy cider inside."""
+    m = B.M()
+    m.cyl(MUG_C, MUG_R, MUG_H, "wood_light", axis=(0, 1, 0), segs=8, cap="cloth_cream")         # body, froth on top
+    for y in (-MUG_H * 0.32, MUG_H * 0.32):
+        m.cyl(MUG_C + V((0, y, 0)), MUG_R + 0.0025, 0.005, "iron", axis=(0, 1, 0), segs=8)       # hoops
+    hx = MUG_C.x + MUG_R + 0.008
+    m.beam(V((hx, -0.012, 0)), V((hx, 0.014, 0)), 0.005, "wood_dark")                          # handle, far side
+    for y in (-0.012, 0.014):
+        m.beam(V((hx + 0.002, y, 0)), V((MUG_C.x + MUG_R - 0.003, y, 0)), 0.005, "wood_dark")
+    return m.obj("prop_mug", coll)
+
+
+def prop_pestle(coll):
+    """A stone pestle: the grip at the top, the heavy rounded end at +Y."""
+    m = B.M()
+    m.cyl(V((0, 0.028, 0)), 0.006, 0.076, "stone_pale", axis=(0, 1, 0), segs=6, r2=0.009)
+    m.blob(PESTLE_TIP + V((0, -0.006, 0)), V((0.011, 0.012, 0.011)), "stone_light", 6, 3)
+    return m.obj("prop_pestle", coll)
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=str(ROOT / "template.blend"))
     bpy.data.materials["M_Palette"].node_tree.nodes["Image Texture"].image.reload()
@@ -114,7 +141,7 @@ def main():
     for o in list(ref.objects):
         bpy.data.objects.remove(o)
     coll = bpy.data.collections["Assets"]
-    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle):
+    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle, prop_mug, prop_pestle):
         ob = fn(coll)
         print(f"STAT {ob.name}: {K.tris(ob)} tris")
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "tools.blend"), relative_remap=True)

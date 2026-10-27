@@ -129,10 +129,15 @@ def hidden():
 
 
 # ---------------------------------------------------------------- raccoons at spots
-def raccoon_at(spot_ob, variant="chr_raccoon", blend="chr_raccoon_animated.blend", clip="idle", tool=None):
+VARIANT_BLEND = {"chr_raccoon": "chr_raccoon_animated.blend", "chr_raccoon_kit": "chr_raccoon_animated_kit.blend",
+                 "chr_raccoon_elder": "chr_raccoon_animated_elder.blend"}
+
+
+def raccoon_at(spot_ob, variant="chr_raccoon", blend=None, clip="idle", tool=None, tool_blend="tools.blend"):
     """Load a raccoon from its animated file, stand it on `spot_ob`, play `clip`, tool (prop name) in handslot.r
-    exactly as the game attaches it (at the hand slot's origin, no offset). Returns (rig, mesh, tool object)."""
-    with bpy.data.libraries.load(str(ROOT / blend)) as (src, dst):
+    exactly as the game attaches it (at the hand slot's origin, no offset). Returns (rig, mesh, tool object).
+    Several raccoons of one variant can be placed: each load brings fresh copies."""
+    with bpy.data.libraries.load(str(ROOT / (blend or VARIANT_BLEND[variant]))) as (src, dst):
         dst.objects = [variant, variant + "_mesh"]
     rig, mesh = dst.objects
     for o in (rig, mesh):
@@ -143,7 +148,7 @@ def raccoon_at(spot_ob, variant="chr_raccoon", blend="chr_raccoon_animated.blend
     rig.animation_data.action = next(t.strips[0].action for t in rig.animation_data.nla_tracks if t.name == clip)
     tob = None
     if tool:
-        with bpy.data.libraries.load(str(ROOT / "tools.blend")) as (src, dst):
+        with bpy.data.libraries.load(str(ROOT / tool_blend)) as (src, dst):
             dst.objects = [tool]
         tob = dst.objects[0]
         bpy.context.scene.collection.objects.link(tob)
@@ -210,7 +215,8 @@ def check(root, W, D, H=None, crew=(), allow=(), sky=(), step=1):
     checked while the building plays clip_of_building; contacts: {object name: frames or None} that the PAWS
     (or for the tool: the tool) may touch, e.g. {"pr_line": None} or {"pr_log": (0, 1, 2)}; "wade" = water the
     raccoon stands in (any part of it may be in it). allow: pairs of building
-    object names that may touch. sky: objects allowed above the height limit (smoke). Returns a list of problems."""
+    object names that may touch. sky: objects allowed above the height limit (smoke). With several raccoons, they are
+    also checked against each other (no tail through a neighbour). Returns a list of problems."""
     objs = [root] + [o for o in root.children_recursive if o.type == "MESH"]
     movers = [o for o in objs if o.animation_data and o.animation_data.nla_tracks]
     clips = sorted({t.name for o in movers for t in o.animation_data.nla_tracks})
@@ -255,6 +261,10 @@ def check(root, W, D, H=None, crew=(), allow=(), sky=(), step=1):
                     d = max(abs(a - b) for ra, rb in zip(rest[m.name], m.matrix_world) for a, b in zip(ra, rb))
                     if d > 1e-4:
                         probs.append((clip, f, "loop does not close", m.name, round(d, 5)))
+            for i, a in enumerate(crew_trees):                       # raccoons against each other
+                for b in crew_trees[i + 1:]:
+                    if a[0].overlap(b[0]) or a[1].overlap(b[1]) or a[0].overlap(b[1]) or a[1].overlap(b[0]):
+                        probs.append((clip, f, "raccoons touch each other", a[6].name, b[6].name))
             for rt_body, rt_paw, tt, tool, contacts, rf, mesh, vis in crew_trees:   # raccoons at work
                 for o in objs:
                     ok = contacts.get(o.name, "no")
