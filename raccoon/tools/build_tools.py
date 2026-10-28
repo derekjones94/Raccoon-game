@@ -8,12 +8,14 @@ Convention for every tool (same as prop_cane):
   * the hammer's striking face points along +X (like the axe's edge); the ladle's bowl opens toward +Z
   * the mug is held round its body: its axis runs along +Y (open top at +Y), the paw on its back, the body a touch along +X
   * the pestle's grinding end is at +Y
+  * the spear's point is at +Y (held upright, the butt toward -Y); the hand brush's bristles face -X
 Attach in the game as a child of the raccoon's handslot.r bone with an identity transform; the job clips (work_chop,
 work_fish) were built against exactly this frame, so the axe lands edge-first and the rod points over the water.
 
 Run:  python3 tools/build_tools.py
-Out:  tools.blend, export/prop_axe.glb, prop_fishing_rod.glb, prop_watering_can.glb, prop_hammer.glb, prop_ladle.glb, prop_mug.glb, prop_pestle.glb
+Out:  tools.blend, export/prop_axe.glb, prop_fishing_rod.glb, prop_watering_can.glb, prop_hammer.glb, prop_ladle.glb, prop_mug.glb, prop_pestle.glb, prop_spear.glb, prop_brush.glb
 """
+import math
 import sys
 from pathlib import Path
 
@@ -37,7 +39,10 @@ HAMMER_FACE = V((0.02, HAMMER_Y, 0.0))   # middle of the striking face, slot spa
 LADLE_BOWL = V((0.0, 0.15, 0.0))     # centre of the ladle's bowl, slot space
 MUG_C = V((0.021, 0.0, 0.0))         # centre of the mug's body, slot space (its axis runs along Y)
 MUG_R, MUG_H = 0.021, 0.046
-PESTLE_TIP = V((0.0, 0.07, 0.0))      # the pestle's grinding end, slot space
+PESTLE_TIP = V((0.0, 0.07, 0.0))  
+SPEAR_BUTT, SPEAR_TIP = -0.118, 0.33  # along Y from the grip
+BRUSH_C = V((-0.012, 0.075, 0.0))   # middle of the brush's bristle block (its bristles face -X)
+BRUSH_TILT = 27.0                     # degrees the head is turned from the handle (work_sweep holds it 27 deg down)    # the pestle's grinding end, slot space
 
 
 def prop_axe(coll):
@@ -134,6 +139,29 @@ def prop_pestle(coll):
     return m.obj("prop_pestle", coll)
 
 
+def prop_spear(coll):
+    """A guard's spear: a long shaft through the fist (along Y), the butt near the floor, an iron point up top, a
+    teal pennant under the point."""
+    m = B.M()
+    L = SPEAR_TIP - 0.05 - SPEAR_BUTT
+    m.cyl(V((0, SPEAR_BUTT + L / 2, 0)), 0.0055, L, "wood_mid", axis=(0, 1, 0), segs=5, cap="wood_dark")
+    m.cyl(V((0, SPEAR_TIP - 0.028, 0)), 0.012, 0.056, "iron_light", axis=(0, 1, 0), segs=4, r2=0.0)     # point
+    m.cyl(V((0, SPEAR_TIP - 0.055, 0)), 0.008, 0.01, "iron_dark", axis=(0, 1, 0), segs=5)
+    m.obox(V((0.0, SPEAR_TIP - 0.09, -0.024)), (0.003, 0.05, 0.04), "teal")                           # pennant
+    return m.obj("prop_spear", coll)
+
+
+def prop_brush(coll):
+    """A janitor's hand brush: a short handle from the fist along +Y, a wooden block with bristles facing -X."""
+    m = B.M()
+    m.cyl(V((0, 0.02, 0)), 0.006, 0.06, "wood_light", axis=(0, 1, 0), segs=5, cap="wood_dark")
+    tilt = math.radians(BRUSH_TILT)                  # the head is set at an angle to the handle, so it lies flat on the
+    up = V((math.cos(tilt), -math.sin(tilt), 0))     # floor while the handle slopes down to it (its bristles face -up)
+    m.obox(BRUSH_C + up * 0.008, (0.014, 0.06, 0.028), "wood_mid", rot=(0, 0, -tilt))
+    m.obox(BRUSH_C - up * 0.008, (0.018, 0.056, 0.024), "rope", rot=(0, 0, -tilt))          # bristles
+    return m.obj("prop_brush", coll)
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=str(ROOT / "template.blend"))
     bpy.data.materials["M_Palette"].node_tree.nodes["Image Texture"].image.reload()
@@ -141,7 +169,7 @@ def main():
     for o in list(ref.objects):
         bpy.data.objects.remove(o)
     coll = bpy.data.collections["Assets"]
-    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle, prop_mug, prop_pestle):
+    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle, prop_mug, prop_pestle, prop_spear, prop_brush):
         ob = fn(coll)
         print(f"STAT {ob.name}: {K.tris(ob)} tris")
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "tools.blend"), relative_remap=True)

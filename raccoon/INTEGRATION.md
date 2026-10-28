@@ -46,6 +46,8 @@ raccoon.global_transform = spot.global_transform
 | `prop_hammer.glb` | Tinker bench | `work_hammer` |
 | `prop_mug.glb` | Patio bar | `work_drink` |
 | `prop_pestle.glb` | Infirmary | `work_grind` |
+| `prop_spear.glb` | Guard post | `work_guard` |
+| `prop_brush.glb` | Janitor shed | `work_sweep` |
 
 To attach a tool:
 1. Add a `BoneAttachment3D` on the raccoon's skeleton, bone **`handslot.r`**.
@@ -58,6 +60,8 @@ Each tool is built in the hand slot's own space:
 - **The watering can is carried by its top handle.** The handle runs along +Y toward the spout, and the can hangs below it (-Z).
 - **The hammer's striking face points along +X**, like the axe's edge. The ladle's bowl is at the +Y end.
 - **The mug is held round its body**, not by its handle: its open top points along +Y. A raccoon's arms are too short to hold a mug out by the handle and still reach its mouth.
+- **The spear's** point is at the +Y end, its butt 0.12 m the other way. The guard holds it upright beside the right leg.
+- **The brush's** head is set at 27° to its handle, so its bristles lie flat on the floor while `work_sweep` holds the handle sloping down to it.
 - **The elder's cane** (`prop_cane.glb`) stays in his right paw in `work_teach`, attached the same way as always.
 
 `work_chop` was built against exactly this frame, so the edge lands on the log first. If the game uses a different axe model, such as a KayKit one, its blade sits differently in the slot. That is why the axe struck with its blunt end. Use `prop_axe.glb`, or rotate the other axe in your scene to match it: edge along +X, handle along +Y.
@@ -90,6 +94,13 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_training_nook_2x2` | `spot_elder` | `work_teach` (96), on `chr_raccoon_elder` | `prop_cane` (as always) | `work` (96) |
 | `bld_training_nook_2x2` | `spot_kit_1` to `_3` | `work_listen` (96), on `chr_raccoon_kit` | none | |
 | `bld_guild_hall_3x3` | `spot_gather_1` to `_4` (round the war table) | `work_read` (48) | none | `work` (96) while a crew is gathered |
+| `bld_guard_post_2x2` | `spot_work` (up on the watch platform, at the front rail) | `work_guard` (96) | `prop_spear` | `work` (96) |
+| `bld_alarm_bell_1x1` | `spot_work` (faces the bell, along the lot's diagonal) | `work_ring` (48) | none | `work` (48) |
+| `bld_graveyard_3x3` | `spot_work` (behind the fresh grave) | `work_tend` (48) | none | `work` (96) |
+| `bld_graveyard_3x3` | `spot_mourn_1`, `_2` (at the foot of a grave, facing its stone) | `work_mourn` (96) | none | |
+| `bld_haulers_lodge_2x2` | `spot_work` (behind the dray) | `work_stash` (48) | none | `work` (48) |
+| `bld_haulers_lodge_2x2` | `spot_rest_1`, `_2` (on the bunks) | `sleep` (72, the base clip) | none | (any) |
+| `bld_janitor_shed_2x1` | `spot_work` (on the flagstones) | `work_sweep` (48) | `prop_brush` | `work` (48) |
 
 All clips are 24 fps and loop.
 
@@ -110,6 +121,11 @@ All clips are 24 fps and loop.
 - **Trash bin:** the banana peel and a can on the heap jump as the paws dig; the lid rattles.
 - **Training nook:** the slate rattles when the elder taps it (frames 23 and 30), so start his `work_teach` with the building's `work`. The kits' `work_listen` can start whenever.
 - **Infirmary:** the medicine in the mortar swirls with the pestle (two turns a loop).
+- **Alarm bell:** the rope and the bell follow the haul in `work_ring` exactly: the bell swings over on each pull and the clapper strikes. Out of sync, the paws would slide up and down a still rope. Keep these two in step, as at the smelter.
+- **Janitor shed:** a little drift of dirt rides ahead of the brush on each stroke and tips into the pan, with a puff of dust. Out of sync, the dirt would move by itself, so keep these in step too.
+- **Graveyard:** the seedling between the gardener's paws wiggles on each pat (as at the cave garden). The mourners can start whenever.
+- **Haulers' lodge:** the goods in the dray settle on the two shoves, as at the stockpile. The hoist and the wheel on its stand aren't tied to anyone.
+- **Guard post:** the lantern turns slowly with the guard's scan (both 96 frames). It still looks fine if they drift apart.
 - **Patio bar, map room, guild hall:** nothing in the building is tied to one raccoon. Start each raccoon's clip when it sits down or arrives. Offsetting them, and mixing `work_drink` with `work_chat` at the bar, looks livelier than everyone moving in step.
 
 If you can't keep them in sync, the buildings still look right on their own. You just lose the hit lining up with the chips, and the bite with the ears.
@@ -135,10 +151,15 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Patio bar:** up to five raccoons at once, sitting on rugs round the fire pit (`spot_seat_1` to `_5`). Seated raccoons sit on the floor with their legs out in front, so the seats are on the ground, not on stools. Adults only for now (see section 6).
 - **Infirmary:** patients sit propped up and doze on the cots with the base `sleep` clip. Each cot is sized for the whole sleeping raccoon, tail included, like the den's beds.
 - **Guild hall:** the roof is the child node **`bld_guild_hall_3x3_roof`**, with a ceiling under it. Hide it to look inside, as with the den. The chimney smoke is the roof's child, so it hides with it. The walls stop at 0.52 m so the inside reads from the game camera.
+- **Guard post:** the guard's spot is up on the watch platform, 0.34 m above the ground, and the raccoon reaches it by the ladder at the back. There's no climbing clip yet (the tracker lists `kit_ladder`'s climb for batch 6), so for now move the raccoon straight onto the spot, or fade it out at the ladder's foot and in at the top.
+- **Alarm bell:** the frame stands across the lot's diagonal, and the ringer faces the bell along it. That way the game camera sees the ringer side-on, with the rope running in at a slant from the lever above the bell. In `idle` the rope hangs straight down; in `work` it runs to the ringer's paws. It snaps between the two when the clip switches, like the cold cellar's door.
+- **Graveyard:** a gardener tends the fresh grave (`work_tend`, the cave garden's clip), and up to two mourners stand at the foot of graves with their heads bowed (`work_mourn`). About 3,900 triangles: a 3×3 lot with a wall all round.
+- **Haulers' lodge:** off-shift haulers sleep on the two bunks in the shed. The loader packs the dray with `work_stash`, the stockpile's clip.
+- **Janitor shed:** the dustpan is part of the building, with its handle at the janitor's left paw.
 
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have fifteen job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`.
+- **Adults** (`chr_raccoon`) have nineteen job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`.
 - **Kits** (`chr_raccoon_kit`) have one: `work_listen` (training nook). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
 - **The elder** (`chr_raccoon_elder`) has one: `work_teach` (training nook), leaning on his cane with his right paw and teaching with his left.
 
@@ -159,7 +180,8 @@ The only allowed contacts are the intended ones:
 - the rod tip at the line;
 - the watering can's spout at its water stream;
 - the hammer on the bar it works, the ladle in the brew;
-- paws in the water, the heaps, the planter's soil, the goods in the crates, the bellows handle, the counter and its coins, the bar on the bench, the maps, the mortar, the elder's slate;
+- the brush's bristles on the janitor's flagstones;
+- paws in the water, the heaps, the planter's soil, the goods in the crates, the bellows handle, the counter and its coins, the bar on the bench, the maps, the mortar, the elder's slate, the bell rope, the fresh grave's soil, the dustpan's handle;
 - the wader's legs in the water.
 
 Results are in `renders/qa_buildings.txt`. The job clips also pass the character check (`renders/qa_report.txt`): no limb into the body or head, nothing under the floor.

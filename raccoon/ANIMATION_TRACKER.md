@@ -58,15 +58,15 @@ Also new in batch 3:
 - **Job clips** on `chr_raccoon` (adults only): `work_pump`, `work_stir`, `work_hammer`, `work_haggle`. All earlier clips are unchanged.
 - **Cold cellar (batch 2):** the roof was three overlapping shells; it is now one smooth dome in bands (earth, grass, snow), and the snow drifts on the ground have softer outlines.
 
-## Batch 4: social and care. Done, awaiting your sign-off
+## Batch 4: social and care. Done, signed off
 
 | Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_patio_bar_2x2` | ✅ rebuilt: round plank deck, fire pit, five rug seats, keg bar, lantern strings, a board game on a crate | ✅ fire flickers, lanterns sway | ✅ the fire burns up with sparks, mugs clink | `work_drink` + `prop_mug` (new), `work_chat` (new): sitting, sipping, talking, laughing | `spot_seat_1` to `_5` | ✅ clean, five at once | ⬜ |
-| `bld_infirmary_2x2` | ✅ rebuilt: two cots, a healer's corner with a mortar on a stand, kettle on a brazier, jar shelf, bandage line | ✅ bandages sway, kettle steams | ✅ the kettle boils (lid rattles), medicine swirls | `work_grind` + `prop_pestle` (new); patients use `sleep` | `spot_work`, `spot_patient_1`, `_2` | ✅ clean, healer and two patients | ⬜ |
-| `bld_map_room_2x2` | ✅ rebuilt: low map table, candle, pin-board of charts with string, bookshelf, globe, barrel of rolled maps | ✅ candle flickers, map corner and charts flutter | ✅ a pin jiggles as plans are made | `work_read` (new): crouched over the map, tracing a route | `spot_work_1`, `_2` | ✅ clean, two readers | ⬜ |
-| `bld_training_nook_2x2` | ✅ rebuilt: slate on an easel with a lock and key in chalk, kit cushions, practice dummy with a purse, books, practice locks | ✅ dummy rocks, purse swings, lantern sways | ✅ the slate rattles on the elder's taps | `work_teach` (new, the elder, cane in hand); `work_listen` (new, kits) | `spot_elder`, `spot_kit_1` to `_3` | ✅ clean, elder and three kits | ⬜ |
-| `bld_guild_hall_3x3` | ✅ overhauled like the den: hollow timber hall on a stone footing, open door, shuttered windows, a roof the game can hide; inside: war table with a raid map, hearth, notice board, trophy shelf, loot corner, tool rack, guild banner | ✅ hearth fire, chimney smoke, banners and torches | ✅ notices flutter, candles burn up | `work_read`: a crew planning round the war table | `spot_gather_1` to `_4` | ✅ clean, a crew of four | ⬜ |
+| `bld_patio_bar_2x2` | ✅ rebuilt: round plank deck, fire pit, five rug seats, keg bar, lantern strings, a board game on a crate | ✅ fire flickers, lanterns sway | ✅ the fire burns up with sparks, mugs clink | `work_drink` + `prop_mug` (new), `work_chat` (new): sitting, sipping, talking, laughing | `spot_seat_1` to `_5` | ✅ clean, five at once | ✅ |
+| `bld_infirmary_2x2` | ✅ rebuilt: two cots, a healer's corner with a mortar on a stand, kettle on a brazier, jar shelf, bandage line | ✅ bandages sway, kettle steams | ✅ the kettle boils (lid rattles), medicine swirls | `work_grind` + `prop_pestle` (new); patients use `sleep` | `spot_work`, `spot_patient_1`, `_2` | ✅ clean, healer and two patients | ✅ |
+| `bld_map_room_2x2` | ✅ rebuilt: low map table, candle, pin-board of charts with string, bookshelf, globe, barrel of rolled maps | ✅ candle flickers, map corner and charts flutter | ✅ a pin jiggles as plans are made | `work_read` (new): crouched over the map, tracing a route | `spot_work_1`, `_2` | ✅ clean, two readers | ✅ |
+| `bld_training_nook_2x2` | ✅ rebuilt: slate on an easel with a lock and key in chalk, kit cushions, practice dummy with a purse, books, practice locks | ✅ dummy rocks, purse swings, lantern sways | ✅ the slate rattles on the elder's taps | `work_teach` (new, the elder, cane in hand); `work_listen` (new, kits) | `spot_elder`, `spot_kit_1` to `_3` | ✅ clean, elder and three kits | ✅ |
+| `bld_guild_hall_3x3` | ✅ overhauled like the den: hollow timber hall on a stone footing, open door, shuttered windows, a roof the game can hide; inside: war table with a raid map, hearth, notice board, trophy shelf, loot corner, tool rack, guild banner | ✅ hearth fire, chimney smoke, banners and torches | ✅ notices flutter, candles burn up | `work_read`: a crew planning round the war table | `spot_gather_1` to `_4` | ✅ clean, a crew of four | ✅ |
 
 Also new in batch 4:
 - **Tools:** `prop_mug.glb` (held round its body), `prop_pestle.glb`.
@@ -74,15 +74,20 @@ Also new in batch 4:
 - **QA:** buildings with several raccoons are also checked raccoon against raccoon (no tail through a neighbour).
 - **Guild hall:** 4,300 triangles: the biggest model so far (3x3, a full interior and a roof).
 
-## Batch 5: civic and watch
+## Batch 5: civic and watch. Done, awaiting your sign-off
 
-| Model | Now | Model work | `idle` | `work` | Raccoon clip / tool | QA | Signed off |
+| Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
-| `bld_guard_post_2x2` | stand-in | 🔁 rebuild | ⬜ flag | ⬜ lantern turns | ⬜ keep watch | ⬜ | ⬜ |
-| `bld_alarm_bell_1x1` | stand-in | 🔁 rebuild | ⬜ bell sways | ⬜ rings hard | ⬜ pull the rope | ⬜ | ⬜ |
-| `bld_graveyard_3x3` | stand-in | 🔁 rebuild | ⬜ candles, grass | ⬜ | ⬜ | ⬜ | ⬜ |
-| `bld_haulers_lodge_2x2` | stand-in | 🔁 rebuild | ⬜ sign swings | ⬜ cart wheel | ⬜ | ⬜ | ⬜ |
-| `bld_janitor_shed_2x1` | stand-in | 🔁 rebuild | ⬜ broom tips | ⬜ | ⬜ sweep | ⬜ | ⬜ |
+| `bld_guard_post_2x2` | ✅ rebuilt: a railed watch platform on log posts with a ladder, a teal flag, a lantern on a bracket; round its foot a palisade, a spear rack, a fire basket, sling stones | ✅ flag waves, lantern sways, fire flickers | ✅ flag snaps harder, the lantern turns slowly to light the woods | `work_guard` + `prop_spear` (new): spear upright, scans the woods side to side | `spot_work` (up on the platform) | ✅ clean | ⬜ |
+| `bld_alarm_bell_1x1` | ✅ rebuilt: a bronze bell in a timber frame with a shingled cap, a lever and rope, a cobbled pad | ✅ the bell sways a little, a sparrow hops on the beam | ✅ two hard hauls a loop: the bell swings over, the clapper strikes, the sparrow has flown | `work_ring` (new): both paws on the rope, hauls down with the knees | `spot_work` (faces the bell) | ✅ clean | ⬜ |
+| `bld_graveyard_3x3` | ✅ rebuilt: a drystone wall and plank gate, a flagstone path to a memorial stone, headstones with carved paws, an old tree, a fresh grave with a plank marker | ✅ candles flicker, grass and the tree sway, the gate creaks, a crow hops between stones | ✅ as idle, and the seedling being planted wiggles on each pat | `work_tend` (batch 2) for the gardener; `work_mourn` (new): head bowed, paws clasped | `spot_work`, `spot_mourn_1`, `_2` | ✅ clean, gardener and two mourners | ⬜ |
+| `bld_haulers_lodge_2x2` | ✅ rebuilt: a plank yard and open shed with two bunks, packs on pegs, cargo; a dray, a hoist with a winch, a spare wheel on a stand, a hanging sign | ✅ sign and lantern sway, the wheel on the stand turns | ✅ the hoist lifts a crate and lowers it, the goods in the dray settle | `work_stash` (batch 2) at the dray; haulers sleep on the bunks (`sleep`) | `spot_work`, `spot_rest_1`, `_2` | ✅ clean, loader and two sleepers | ⬜ |
+| `bld_janitor_shed_2x1` | ✅ rebuilt: a plank shed with its door open (mops, brooms, rags), a broom leaning outside, a rag line, a flagstone yard with a dustpan | ✅ the broom slips, wobbles and settles; rags stir | ✅ dirt is swept into the pan, a puff of dust each stroke | `work_sweep` + `prop_brush` (new): crouched, two strokes a loop, the left paw on the pan's handle | `spot_work` | ✅ clean | ⬜ |
+
+Also new in batch 5:
+- **Tools:** `prop_spear.glb`, `prop_brush.glb` (its head angled so it lies flat on the floor).
+- **Job clips** on `chr_raccoon` (adults only): `work_guard`, `work_ring`, `work_mourn`, `work_sweep`. All earlier clips are unchanged.
+- **Guard post:** the guard's spot is raised, on the platform. Until there's a climbing clip, the game moves the raccoon straight onto it (see `INTEGRATION.md`).
 
 ## Batch 6: training and the kit pieces
 

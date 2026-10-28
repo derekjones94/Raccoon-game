@@ -15,6 +15,10 @@
   work_chat     sitting on a cushion, no mug: talks with its paws, slaps its knee laughing (patio bar)
   work_grind    crouched by a mortar on a stand at its right foot, grinding medicine with a pestle
   work_read     crouched over a map on a low table, paws holding it flat, the right paw tracing a route
+  work_guard    on watch with a spear held upright in the right paw: scans slowly left and right, peering
+  work_ring     hauling on the alarm bell's rope with both paws: two big pulls a loop
+  work_mourn    standing at a grave, head bowed, paws clasped, ears and tail low
+  work_sweep    crouched, sweeping the floor into a dustpan with a hand brush, the left paw holding the pan
   work_teach    THE ELDER: leaning on his cane (right paw), points at a slate with his left, turns to the class
   work_listen   A KIT: sitting on the floor listening, nods, ears up, now and then puts a paw up to ask
 
@@ -636,6 +640,89 @@ def listen(p):
     return rots, -0.05, "seat", {"r": (pr, None, None), "l": (KNEE_L, None, None)}
 
 
+GUARD_GRIP = loc(f=0.058, u=0.135, l=-0.118)          # the spear upright beside the right leg (its butt near the floor)
+
+
+def guard(p):
+    """On watch, spear upright in the right paw: the head turns slowly to one side and the other, a pause to peer at
+    each end; ears swivel; the left paw hangs easy. 96 frames."""
+    scan = math.sin(TAU * p)
+    shade = ramp(p, 0.15, 0.22) * (1 - ramp(p, 0.36, 0.43))            # a long peer at the far left
+    Ts = frame_yz((UP - LEFT * 0.1 + FWD * 0.08).normalized(), FWD * -1)   # the shaft leans a touch out, clear of the forearm
+    pl = loc(f=0.05, u=0.11, l=0.095)
+    rots = act({
+        "spine": [(X, -2)], "chest": [(Z, 5 * scan)],
+        "head": [(Z, 26 * scan), (X, -4 + 6 * shade)],
+        "ear.l": [(Y, 18 + 8 * scan)], "ear.r": [(Y, -18 + 8 * scan)],
+        "upperleg.l": [(Y, -4)], "upperleg.r": [(Y, 4)],
+    }, tail_sway(p, 6, 1))
+    return rots, 0.0, "legs", {"r": (GUARD_GRIP, Ts, -LEFT * 1.0 + V((0, 0.4, 0))), "l": (pl, None, LEFT * 1.0 - UP * 0.4 + V((0, 0.3, 0)))}
+
+
+ROPE = loc(f=0.112, l=0.0)                             # where the bell rope hangs in front of the ringer (u = 0)
+RING_TOP, RING_PULL = 0.225, 0.07                      # the upper paw's height before a pull, how far a pull brings it down
+
+
+def ring_pull(p):
+    """0 (paws up) .. 1 (rope hauled down): two big pulls a loop, a hard haul and a quicker rise."""
+    u = (2 * p) % 1.0
+    return smooth(u / 0.4) if u < 0.4 else 1 - smooth((u - 0.4) / 0.6)
+
+
+def ring(p):
+    """Hauling on the alarm bell's rope with both paws, one above the other: down hard, let it lift them, again.
+    The building's rope and bell follow ring_pull."""
+    d = ring_pull(p)
+    top = ROPE + loc(u=RING_TOP - RING_PULL * d)
+    rots = act({
+        "upperleg.l": [(Y, -8), (X, -10 - 28 * d)], "upperleg.r": [(Y, 8), (X, -10 - 28 * d)],
+        "lowerleg.l": [(X, 16 + 46 * d)], "lowerleg.r": [(X, 16 + 46 * d)],
+        "foot.l": [(X, -6 - 18 * d)], "foot.r": [(X, -6 - 18 * d)],
+        "spine": [(X, 2 + 14 * d)], "chest": [(X, 2 + 4 * d)], "head": [(X, -14 + 8 * d)],
+        "ear.l": [(Y, 4 - 20 * d)], "ear.r": [(Y, -4 + 20 * d)],
+    }, tail_sway(p, 8, 2))
+    return rots, 0.0, "legs", {"r": (top + loc(l=-0.006), None, None), "l": (top + loc(u=-0.028, l=0.004), None, None)}
+
+
+def mourn(p):
+    """Standing at a grave: head bowed, paws clasped in front, ears and tail low; slow breaths, a little sniffle."""
+    breath = AN.s(p, 1)
+    sniff = math.exp(-((p - 0.55) ** 2) / 0.002)
+    clasp = loc(f=0.106, u=0.148, l=0.0)
+    rots = act({
+        "spine": [(X, 6 + 1.5 * breath)], "chest": [(X, 4 + 1.5 * breath + 3 * sniff)],
+        "head": [(X, 13 + 3 * sniff), (Z, 3 * breath)],
+        "ear.l": [(Y, 40)], "ear.r": [(Y, -40)],
+        "tail_1": [(X, -30)], "tail_2": [(X, -12)],
+    }, tail_sway(p, 3, 1))
+    return rots, 0.0, "legs", {"r": (clasp + loc(l=-0.013, u=0.003 * sniff), None, None),
+                               "l": (clasp + loc(l=0.013, u=0.003 * sniff), None, None)}
+
+
+SWEEP_C = loc(f=0.17, u=0.018, l=-0.045)               # the middle of the brush's sweep: the bristle block, on the floor
+PAN = loc(f=0.13, l=0.055)                             # the dustpan, on the floor at its left
+
+
+def sweep(p):
+    """Crouched, sweeping toward the dustpan: two strokes a loop (brush across, lift back), the left paw on the
+    pan's handle."""
+    u = (2 * p) % 1.0
+    k = smooth(u / 0.55) if u < 0.55 else 1 - smooth((u - 0.55) / 0.45)
+    lift = 0.0 if u < 0.55 else 0.018 * math.sin(math.pi * (u - 0.55) / 0.45)
+    bristle = SWEEP_C + loc(l=-0.035 + 0.065 * k, u=lift)
+    yd = (FWD * 0.8 - UP * 0.45 + LEFT * 0.35).normalized()             # the handle points from the paw down to the brush
+    Ts = frame_yx(yd, UP)                                                # +X up: the bristles (-X) face the floor
+    grip = bristle - Ts @ T.BRUSH_C
+    rots = act({
+        "upperleg.l": [(Y, -18), (X, -70)], "upperleg.r": [(Y, 18), (X, -70)],
+        "lowerleg.l": [(X, 96)], "lowerleg.r": [(X, 96)], "foot.l": [(X, -26)], "foot.r": [(X, -26)],
+        "spine": [(X, 30)], "chest": [(X, 16), (Z, 5 * (k - 0.5))], "head": [(X, -14), (Z, 8 * (k - 0.5))],
+        "ear.l": [(Y, 10)], "ear.r": [(Y, -10)],
+        "tail_1": [(X, -30)],
+    }, tail_sway(p, 6, 2))
+    return rots, 0.0, "legs", {"r": (grip, Ts, -LEFT * 1.0 - FWD * 0.3 + UP * 0.3), "l": (PAN + loc(f=-0.03, u=0.06), None, None)}
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -656,6 +743,10 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_read": (read, 48, None),
     "work_teach": (teach, 96, None),
     "work_listen": (listen, 96, None),
+    "work_guard": (guard, 96, "prop_spear"),
+    "work_ring": (ring, 48, None),
+    "work_mourn": (mourn, 96, None),
+    "work_sweep": (sweep, 48, "prop_brush"),
 }
 JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit"}   # everything else: the adult
 
