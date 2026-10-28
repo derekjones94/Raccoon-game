@@ -103,7 +103,7 @@ Also new in batch 5:
 
 Our own decoration models, in the batch style: an `idle` loop, plus `spot_` markers where raccoons use them. They come before batch 6, in three groups with a sign-off after each. Costs from the request are in brackets.
 
-### Decorations D1: loot on show. Done, awaiting your sign-off
+### Decorations D1: loot on show. Done, signed off
 
 | Model | What it is | `idle` | Raccoons | QA | Signed off |
 |---|---|---|---|---|---|
@@ -111,16 +111,16 @@ Our own decoration models, in the batch style: an `idle` loop, plus `spot_` mark
 | `bld_goblet_planter_1x1` | ✅ a raccoon-sized silver goblet with a gold band and set gems, full of soil, a fern and trailing ivy, on a stone plinth; coins and a spoon round it | ✅ the fronds sway, each a little behind the last | — | ✅ clean | ⬜ |
 | `bld_mirror_mosaic_1x1` | ✅ an arched panel on feet, a round mirror in a sunburst of bottle glass and mirror shards, a wire edge, a bead string with a spoon; bottles and chips below | ✅ glints flash across the shards in turn, the spoon charm swings | — | ✅ clean | ⬜ |
 | `bld_trophy_case_1x1` | ✅ a brass-edged glass case with a pointed lid on a turned-leg stand, a velvet cushion on a turning pedestal, a velvet rope in front; relics as child nodes: `pr_relic_caravan_bell`, `pr_relic_duke_signet` | ✅ the relic turns slowly, sparkles wink | — | ✅ clean | ⬜ |
-| `bld_duke_portrait_1x1` | ✅ a heavy gilt frame on an easel: the duke in a powdered wig, blue coat and sash, with a soot moustache and a raccoon mask painted on; a side table with a candle, the soot pot and the brush | ✅ the candle flickers, leans in a draught | — | ✅ clean | ⬜ |
+| `bld_duke_portrait_1x1` | ✅ a heavy gilt frame on an easel: the duke, a pompous raccoon lord with his ears up through a powdered wig, a monocle, blue coat and sash, with a bandit's eyepatch and a soot moustache painted on; a side table with a candle, the soot pot and the brush | ✅ the candle flickers, leans in a draught | — | ✅ clean | ⬜ |
 
-### Decorations D2: light and rest
+### Decorations D2: light and rest. Done, awaiting your sign-off
 
 | Model | What it is | `idle` | Raccoons | QA | Signed off |
 |---|---|---|---|---|---|
-| `bld_string_lights_2x1` | Two posts with a sag of stolen lanterns between them (wood, metal bars) | ⬜ lanterns sway | — | ⬜ | ⬜ |
-| `bld_mushroom_lamp_1x1` | A tall glowing cave mushroom (herbs); for deep layers | ⬜ glow swells and fades | — | ⬜ | ⬜ |
-| `bld_bottlecap_banner_1x1` | Bottle caps and spoons strung between two sticks; cheap (scrap iron) | ⬜ caps jingle | — | ⬜ | ⬜ |
-| `bld_hammock_1x2` | A hammock slung between two crates | ⬜ rocks gently | ⬜ sleep in it | ⬜ | ⬜ |
+| `bld_string_lights_2x1` | ✅ two guyed posts and a sagging wire of seven mismatched stolen lanterns: tin, paper, a glow-worm jar, a ship's lamp, a teapot with a candle | ✅ the lanterns sway, each to its own beat; flames flicker | — | ✅ clean | ⬜ |
+| `bld_mushroom_lamp_1x1` | ✅ a tall pale stalk on a mossy mound, a broad dark cap with a glowing band and glowing spots, little glowing caps round its foot | ✅ the glow swells and fades in turn, spores drift up | — | ✅ clean | ⬜ |
+| `bld_bottlecap_banner_1x1` | ✅ two crooked sticks in stone heaps, two sagging twines of painted bottle caps, bent spoons and a tin star | ✅ the caps swing and twist in a breeze that comes and goes | — | ✅ clean | ⬜ |
+| `bld_hammock_1x2` | ✅ a striped hammock on spreader bars, roped to posts on two stacked crates; a blanket over its side, tassels; a mug and a book under it | ✅ rocks gently | ✅ `spot_sleep` (the base `sleep` clip); the spot rides on the hammock, so the sleeper rocks with it | ✅ clean, with a sleeper | ⬜ |
 
 ### Decorations D3: fun
 

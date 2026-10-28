@@ -1,4 +1,4 @@
-"""bld_duke_portrait_1x1: a grand gilt portrait of a duke, stolen from his own hall, with a moustache drawn on. A
+"""bld_duke_portrait_1x1: a grand gilt portrait of a raccoon duke, stolen from his own hall, with a moustache drawn on. A
 decoration.
 
 A heavy gilt frame stands on a wooden easel, leaning back a little. In it the duke: powdered wig, blue coat, a red
@@ -68,22 +68,30 @@ def frame_and_picture(m):
     m.obox(V((0.0, cy - 0.016, bz + 0.07)), (0.03, 0.004, 0.16), "cloth_red", rot=(0, -0.6, 0))
     m.blob(V((0.04, cy - 0.02, bz + 0.09)), V((0.016, 0.006, 0.016)), "gold_light", 8, 3)
     m.blob(V((0, cy - 0.016, bz + 0.135)), V((0.03, 0.008, 0.028)), "cloth_cream", 6, 3)
-    # his head, the powdered wig with side curls, a stern brow
+    # his head: a raccoon duke, ears up through a powdered wig, a gold monocle
     hz = bz + 0.2
-    m.blob(V((0, cy - 0.006, hz + 0.012)), V((0.075, 0.012, 0.07)), "cloth_cream", 10, 4)          # wig
+    m.blob(V((0, cy - 0.006, hz + 0.018)), V((0.075, 0.012, 0.06)), "cloth_cream", 10, 4)          # wig
     for sx in (-1, 1):
         for k in range(2):
-            m.blob(V((sx * 0.07, cy - 0.012, hz - 0.03 - 0.03 * k)), V((0.022, 0.01, 0.016)), "bone", 6, 3)
-    m.blob(V((0, cy - 0.014, hz - 0.01)), V((0.045, 0.01, 0.055)), "fur_tan", 10, 4)              # face
-    m.blob(V((0, cy - 0.024, hz - 0.02)), V((0.01, 0.006, 0.016)), "fur_brown", 5, 3)             # nose
-    # the vandalism: a raccoon mask over his eyes and a curly moustache, in soot
-    m.obox(V((0, cy - 0.022, hz + 0.008)), (0.09, 0.003, 0.022), "soot")
+            m.blob(V((sx * 0.068, cy - 0.012, hz - 0.025 - 0.03 * k)), V((0.022, 0.01, 0.016)), "bone", 6, 3)
+        m.cyl(V((sx * 0.045, cy - 0.012, hz + 0.075)), 0.022, 0.05, "fur_dark", segs=4, r2=0.0, axis=(sx * 0.3, 0, 1))   # ears
+        m.cyl(V((sx * 0.045, cy - 0.016, hz + 0.07)), 0.011, 0.03, "fur_cream", segs=4, r2=0.0, axis=(sx * 0.3, 0, 1))
+    m.blob(V((0, cy - 0.014, hz - 0.008)), V((0.05, 0.01, 0.048)), "fur_mid", 10, 4)              # face
+    m.blob(V((0, cy - 0.019, hz - 0.034)), V((0.026, 0.008, 0.022)), "fur_cream", 8, 3)           # muzzle
+    m.obox(V((0, cy - 0.021, hz + 0.004)), (0.088, 0.003, 0.02), "fur_mask")                     # his own mask
+    m.obox(V((0, cy - 0.021, hz + 0.024)), (0.012, 0.003, 0.026), "fur_light")                   # brow stripe
+    m.blob(V((0, cy - 0.026, hz - 0.024)), V((0.009, 0.005, 0.007)), "soot", 5, 3)                # nose
+    m.blob(V((0.02, cy - 0.024, hz + 0.004)), V((0.006, 0.003, 0.006)), "cloth_cream", 5, 3)      # a haughty eye
+    m.cyl(V((0.02, cy - 0.025, hz + 0.004)), 0.014, 0.003, "gold", segs=8, axis=(0, 1, 0))        # monocle
+    m.cyl(V((0.02, cy - 0.026, hz + 0.004)), 0.01, 0.003, "stone_frost", segs=8, axis=(0, 1, 0))
+    m.beam(V((0.032, cy - 0.025, hz - 0.004)), V((0.05, cy - 0.024, hz - 0.06)), 0.002, "gold")  # its chain
+    # the vandalism, in soot: a bandit's eyepatch with its strap, and a big curly moustache
+    m.cyl(V((-0.02, cy - 0.026, hz + 0.004)), 0.014, 0.003, "soot", segs=8, axis=(0, 1, 0))
+    m.obox(V((0, cy - 0.025, hz + 0.022)), (0.1, 0.003, 0.005), "soot", rot=(0, -0.35, 0))
     for sx in (-1, 1):
-        m.blob(V((sx * 0.02, cy - 0.025, hz + 0.008)), V((0.007, 0.003, 0.006)), "cloth_cream", 5, 3)   # eyes
-        m.obox(V((sx * 0.022, cy - 0.025, hz - 0.035)), (0.04, 0.003, 0.009), "soot", rot=(0, sx * 0.25, 0))
-        m.obox(V((sx * 0.046, cy - 0.025, hz - 0.028)), (0.016, 0.003, 0.008), "soot", rot=(0, -sx * 0.9, 0))
-        m.blob(V((sx * 0.052, cy - 0.025, hz - 0.018)), V((0.007, 0.003, 0.007)), "soot", 5, 3)      # the curls
-    m.blob(V((0, cy - 0.024, hz - 0.052)), V((0.012, 0.004, 0.006)), "cloth_red", 5, 3)            # mouth
+        m.obox(V((sx * 0.022, cy - 0.028, hz - 0.044)), (0.04, 0.003, 0.009), "soot", rot=(0, sx * 0.25, 0))
+        m.obox(V((sx * 0.046, cy - 0.028, hz - 0.037)), (0.016, 0.003, 0.008), "soot", rot=(0, -sx * 0.9, 0))
+        m.blob(V((sx * 0.052, cy - 0.028, hz - 0.027)), V((0.007, 0.003, 0.007)), "soot", 5, 3)      # the curls
     # a little raccoon paw signature, bottom right
     m.blob(V((iw / 2 - 0.03, cy - 0.003, bz + 0.03)), V((0.01, 0.003, 0.008)), "soot", 5, 3)
     for k in range(3):

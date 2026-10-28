@@ -102,6 +102,7 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_haulers_lodge_2x2` | `spot_rest_1`, `_2` (on the bunks) | `sleep` (72, the base clip) | none | (any) |
 | `bld_janitor_shed_2x1` | `spot_work` (on the flagstones) | `work_sweep` (48) | `prop_brush` | `work` (48) |
 | `bld_coin_fountain_2x2` | `spot_seat_1` to `_4` (on the rim, facing the water) | `work_drink` (96) or `work_chat` (96) | `prop_mug` with `work_drink` | `work` (48) while anyone's there |
+| `bld_hammock_1x2` | `spot_sleep` (a child of `pr_hammock`) | `sleep` (72, the base clip) | none | `work` (72) while someone's asleep |
 
 All clips are 24 fps and loop.
 
@@ -164,6 +165,8 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Coin fountain:** raccoons sit on the rim facing the water, with their toes over it and their tails hanging off the back of the rim toward the lot's corners. So keep those corners clear. It reads best outdoors.
 - **Trophy case:** one child node per relic, `pr_relic_caravan_bell` and `pr_relic_duke_signet`. Both are in the file and both play the same slow turn; show the one the colony owns and hide the rest. To add a relic, ask for another node like these.
 - **Duke portrait:** a still painting; only the candle moves.
+- **D2 decorations** (`bld_string_lights_2x1`, `bld_mushroom_lamp_1x1`, `bld_bottlecap_banner_1x1`, `bld_hammock_1x2`) work the same way. The mushroom lamp is for the deep layers.
+- **Hammock:** `spot_sleep` is a child of the rocking node `pr_hammock`, not of the building's root. **Parent the sleeping raccoon to the spot** (or play it at the spot's global transform every frame), and it rocks with the hammock. Play the hammock's `work` while someone sleeps (it rocks slower and less), `idle` when it's empty.
 
 ## 6. Who does which job
 

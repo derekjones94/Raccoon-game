@@ -56,4 +56,12 @@
 
 == bld_trophy_case_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
+== bld_string_lights_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_mushroom_lamp_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_bottlecap_banner_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_hammock_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
 == bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)

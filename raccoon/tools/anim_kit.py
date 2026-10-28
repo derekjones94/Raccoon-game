@@ -217,7 +217,9 @@ def check(root, W, D, H=None, crew=(), allow=(), sky=(), step=1):
     raccoon stands in (any part of it may be in it). allow: pairs of building
     object names that may touch. sky: objects allowed above the height limit (smoke). With several raccoons, they are
     also checked against each other (no tail through a neighbour). Returns a list of problems."""
-    objs = [root] + [o for o in root.children_recursive if o.type == "MESH"]
+    crew_obs = {id(o) for c in crew for o in c[:3] if o}               # raccoons parented into the building (a sleeper
+    objs = [root] + [o for o in root.children_recursive               # riding a hammock) aren't building parts
+                     if o.type == "MESH" and id(o) not in crew_obs]
     movers = [o for o in objs if o.animation_data and o.animation_data.nla_tracks]
     clips = sorted({t.name for o in movers for t in o.animation_data.nla_tracks})
     allow = {frozenset(p) for p in allow}
