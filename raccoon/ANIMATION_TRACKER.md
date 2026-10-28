@@ -113,7 +113,7 @@ Our own decoration models, in the batch style: an `idle` loop, plus `spot_` mark
 | `bld_trophy_case_1x1` | ✅ a brass-edged glass case with a pointed lid on a turned-leg stand, a velvet cushion on a turning pedestal, a velvet rope in front; relics as child nodes: `pr_relic_caravan_bell`, `pr_relic_duke_signet` | ✅ the relic turns slowly, sparkles wink | — | ✅ clean | ⬜ |
 | `bld_duke_portrait_1x1` | ✅ a heavy gilt frame on an easel: the duke, a pompous raccoon lord with his ears up through a powdered wig, a monocle, blue coat and sash, with a bandit's eyepatch and a soot moustache painted on; a side table with a candle, the soot pot and the brush | ✅ the candle flickers, leans in a draught | — | ✅ clean | ⬜ |
 
-### Decorations D2: light and rest. Done, awaiting your sign-off
+### Decorations D2: light and rest. Done, signed off
 
 | Model | What it is | `idle` | Raccoons | QA | Signed off |
 |---|---|---|---|---|---|
@@ -122,10 +122,10 @@ Our own decoration models, in the batch style: an `idle` loop, plus `spot_` mark
 | `bld_bottlecap_banner_1x1` | ✅ two crooked sticks in stone heaps, two sagging twines of painted bottle caps, bent spoons and a tin star | ✅ the caps swing and twist in a breeze that comes and goes | — | ✅ clean | ⬜ |
 | `bld_hammock_1x2` | ✅ a striped hammock on spreader bars, roped to posts on two stacked crates; a blanket over its side, tassels; a mug and a book under it | ✅ rocks gently | ✅ `spot_sleep` (the base `sleep` clip); the spot rides on the hammock, so the sleeper rocks with it | ✅ clean, with a sleeper | ⬜ |
 
-### Decorations D3: fun
+### Decorations D3: fun. Done, awaiting your sign-off
 
 | Model | What it is | `idle` | Raccoons | QA | Signed off |
 |---|---|---|---|---|---|
-| `bld_junk_throne_1x1` | A throne of crates, a pot lid and a saddle (gold, wood) | ⬜ a pennant flutters | ⬜ the best thief sits | ⬜ | ⬜ |
-| `bld_dice_table_1x1` | An upturned crate with dice and coins | ⬜ a die wobbles now and then | ⬜ two players (`work_chat`) | ⬜ | ⬜ |
-| `bld_kit_swing_1x1` | A tyre swing on a frame, for the kits; outdoors | ⬜ swing sways | ⬜ a kit swings (new kit clip) | ⬜ | ⬜ |
+| `bld_junk_throne_1x1` | ✅ a crate seat with a saddle strapped on, crate arms with gold knobs, a dented copper pot-lid backrest with a crown nailed on, a spoon flagpole; a red rug, coins, a goblet, a loot sack | ✅ a teal pennant flutters | ✅ `spot_seat`: the best thief feasts (`work_drink` + `prop_mug`); a gap under the backrest takes the tail | ✅ clean, with the king | ⬜ |
+| `bld_dice_table_1x1` | ✅ an upturned crate under green cloth, three dice, stacks of bets, a dice cup, a candle stub; two floor cushions | ✅ a die rocks now and then, the candle flickers; in `work` a die is thrown and tumbles | ✅ `spot_seat_1`, `_2` on the diagonals, seen side-on: two players (`work_chat`) | ✅ clean, two players | ⬜ |
+| `bld_kit_swing_1x1` | ✅ a timber A-frame, a rope to a ring, three ropes to a flat tyre; dandelions and a ball | ✅ the empty swing sways and turns a little | ✅ `spot_swing` rides the swing: a kit pumps on it (`work_swing`, new kit clip, in step with the swing) | ✅ clean, with a kit | ⬜ |

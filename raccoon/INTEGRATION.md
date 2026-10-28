@@ -103,6 +103,9 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_janitor_shed_2x1` | `spot_work` (on the flagstones) | `work_sweep` (48) | `prop_brush` | `work` (48) |
 | `bld_coin_fountain_2x2` | `spot_seat_1` to `_4` (on the rim, facing the water) | `work_drink` (96) or `work_chat` (96) | `prop_mug` with `work_drink` | `work` (48) while anyone's there |
 | `bld_hammock_1x2` | `spot_sleep` (a child of `pr_hammock`) | `sleep` (72, the base clip) | none | `work` (72) while someone's asleep |
+| `bld_junk_throne_1x1` | `spot_seat` (on the throne) | `work_drink` (96) | `prop_mug` | `work` (48) while it's taken |
+| `bld_dice_table_1x1` | `spot_seat_1`, `_2` (on the cushions, on the diagonals) | `work_chat` (96) | none | `work` (48) while anyone plays |
+| `bld_kit_swing_1x1` | `spot_swing` (a child of `pr_swing`) | `work_swing` (48), on `chr_raccoon_kit` | none | `work` (48) |
 
 All clips are 24 fps and loop.
 
@@ -167,11 +170,15 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Duke portrait:** a still painting; only the candle moves.
 - **D2 decorations** (`bld_string_lights_2x1`, `bld_mushroom_lamp_1x1`, `bld_bottlecap_banner_1x1`, `bld_hammock_1x2`) work the same way. The mushroom lamp is for the deep layers.
 - **Hammock:** `spot_sleep` is a child of the rocking node `pr_hammock`, not of the building's root. **Parent the sleeping raccoon to the spot** (or play it at the spot's global transform every frame), and it rocks with the hammock. Play the hammock's `work` while someone sleeps (it rocks slower and less), `idle` when it's empty.
+- **D3 decorations** (`bld_junk_throne_1x1`, `bld_dice_table_1x1`, `bld_kit_swing_1x1`) have raccoon spots.
+- **Kit swing:** like the hammock, `spot_swing` is a child of the moving node (`pr_swing`). **Parent the kit to the spot.** Start the kit's `work_swing` with the swing's `work`, at the same speed: the kit pumps its legs in time with the swing, and its paws hold the two side ropes. Kits only.
+- **Junk throne:** the sitter's tail goes back under the backrest and lies along the seat; that's why the backrest stands on posts with a gap below it.
+- **Dice table:** the players sit on the diagonals, side-on to the game camera. That's the only way two seated raccoons and their tails fit on one cell.
 
 ## 6. Who does which job
 
 - **Adults** (`chr_raccoon`) have nineteen job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`.
-- **Kits** (`chr_raccoon_kit`) have one: `work_listen` (training nook). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
+- **Kits** (`chr_raccoon_kit`) have two: `work_listen` (training nook) and `work_swing` (kit swing). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
 - **The elder** (`chr_raccoon_elder`) has one: `work_teach` (training nook), leaning on his cane with his right paw and teaching with his left.
 
 If the game gives a kit or the elder an adult job, play their generic `work` clip at the spot, or keep them off those jobs. The patio bar's drink and chat clips are adult-only for now; kits and the elder could get their own versions later.

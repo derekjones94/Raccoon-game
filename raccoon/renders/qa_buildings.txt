@@ -65,3 +65,9 @@
 == bld_hammock_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_kit_swing_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_junk_throne_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_dice_table_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)

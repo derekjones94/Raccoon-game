@@ -21,6 +21,7 @@
   work_sweep    crouched, sweeping the floor into a dustpan with a hand brush, the left paw holding the pan
   work_teach    THE ELDER: leaning on his cane (right paw), points at a slate with his left, turns to the class
   work_listen   A KIT: sitting on the floor listening, nods, ears up, now and then puts a paw up to ask
+  work_swing    A KIT: on the tyre swing's rim, holding the ropes, pumping with its legs (the swing follows swing_angle)
 
 How they are made: every frame the body is posed (rotations like the other actions), the feet (or the seat) are
 planted on the floor, then each arm is solved with a two-bone IK so the hand slot lands exactly on its target:
@@ -723,6 +724,33 @@ def sweep(p):
     return rots, 0.0, "legs", {"r": (grip, Ts, -LEFT * 1.0 - FWD * 0.3 + UP * 0.3), "l": (PAN + loc(f=-0.03, u=0.06), None, None)}
 
 
+SWING_GRIP = loc(f=0.03, u=0.2, l=0.117)               # the kit's paws on the swing's side ropes (adult metres, scaled to
+                                                       # the kit when baked); l is mirrored for the right paw
+
+
+def swing_angle(p):
+    """The tyre swing's swing, in degrees forward (the building's work follows this): one swing a loop."""
+    return 10.0 * math.sin(TAU * p)
+
+
+def swing(p):
+    """A KIT on the tyre swing, sitting on its back rim, holding the two side ropes: it pumps, legs kicked out going
+    forward and tucked going back, leaning back with its head up at the top of each swing; ears blown back. 48 frames."""
+    ext = (1 + math.sin(TAU * p + 0.7)) / 2                              # legs out as it swings forward
+    joy = max(0.0, math.sin(TAU * p)) ** 2
+    rots = act({
+        "upperleg.l": [(Y, -28), (X, -64 - 10 * ext)], "upperleg.r": [(Y, 28), (X, -64 - 10 * ext)],
+        "lowerleg.l": [(X, 75 - 65 * ext)], "lowerleg.r": [(X, 75 - 65 * ext)],
+        "foot.l": [(X, 10 - 20 * ext)], "foot.r": [(X, 10 - 20 * ext)],
+        "spine": [(X, 4 - 12 * ext)], "chest": [(X, 2 - 6 * ext)],
+        "head": [(X, -4 - 12 * joy), (Z, 4 * math.sin(TAU * 2 * p))],
+        "ear.l": [(Y, 30 + 15 * ext)], "ear.r": [(Y, -30 - 15 * ext)],
+        "tail_1": [(X, -20)], "tail_2": [(X, -10 + 10 * math.sin(TAU * p))],
+    }, tail_sway(p, 6, 2, 0.12))
+    g = SWING_GRIP
+    return rots, -0.05, "seat", {"r": (V((-g.x, g.y, g.z)), None, None), "l": (g, None, None)}
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -747,8 +775,9 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_ring": (ring, 48, None),
     "work_mourn": (mourn, 96, None),
     "work_sweep": (sweep, 48, "prop_brush"),
+    "work_swing": (swing, 48, None),
 }
-JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit"}   # everything else: the adult
+JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit", "work_swing": "chr_raccoon_kit"}   # everything else: the adult
 
 
 def rig_of(name):
