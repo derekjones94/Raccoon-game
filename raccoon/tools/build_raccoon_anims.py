@@ -211,6 +211,8 @@ def pose_quats(rig, rots):
                 R = cur.rotation_difference(Vector(deg).normalized()).to_matrix() @ R
             elif axis == "MAT":                     # set the bone's whole armature-space orientation (deg = a 3x3)
                 R = deg @ M.inverted() @ Dp.inverted()
+            elif axis == "LOCALQ":                  # set the bone's local pose rotation outright (deg = a Quaternion)
+                R = Dp @ M @ deg.to_matrix() @ M.inverted() @ Dp.inverted()
             else:
                 R = Quaternion(Vector(axis), math.radians(deg)).to_matrix() @ R
         D[b.name] = R @ Dp

@@ -71,3 +71,9 @@
 == bld_junk_throne_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_dice_table_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_shadow_course_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_practice_yard_3x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_sparring_ring_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

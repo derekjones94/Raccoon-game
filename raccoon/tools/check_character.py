@@ -12,7 +12,7 @@ from pathlib import Path
 
 import bpy
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -112,7 +112,22 @@ def deformed(act, f):
     bpy.context.view_layer.update()
     ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
     me = ev.to_mesh()
+    # a clip that travels (the shadow course) turns and moves the whole body by its root: undo that, so every frame is
+    # checked in the raccoon's own frame (the ray-parity test is sensitive to grazing edges at some headings)
+    hb = rig.pose.bones["hips"]
+    d = hb.matrix.to_3x3() @ hb.bone.matrix_local.to_3x3().inverted() @ Vector((0, -1, 0))
+    yaw = math.atan2(d.x, -d.y)
+    global UNDO
+    UNDO = Matrix()
+    h0 = hb.bone.head_local
+    h1 = hb.head
+    if abs(yaw) > 0.1 or (h1 - h0).to_2d().length > 0.01:        # only clips that really travel (not a bob or a sway)
+        UNDO = Matrix.Translation((h0.x, h0.y, 0)) @ Matrix.Rotation(-yaw, 4, "Z") @ Matrix.Translation((-h1.x, -h1.y, 0))
+        me.transform(UNDO)
     return ev, me
+
+
+UNDO = Matrix()          # the last frame's undo of the root's travel (bone positions get it too, for the labels)
 
 
 # parts buried on purpose (shoulder dome, hip root, tail root ...) are inside the body in the game look: skip those
@@ -143,7 +158,7 @@ for act in CLIPS:
             dist = depth_inside(tree, v.co)
             if dist > worst[0]:
                 # where on the limb: nearest deforming bone to the vertex (shoulder crease vs paw in the face ...)
-                near = min(rig.pose.bones, key=lambda b: (b.head - v.co).length if not b.name.startswith(("handslot", "root")) else 9)
+                near = min(rig.pose.bones, key=lambda b: (UNDO @ b.head - v.co).length if not b.name.startswith(("handslot", "root")) else 9)
                 worst = (dist, f, part, f"near {near.name} joint, z {v.co.z:.3f}")
         ev.to_mesh_clear()
     under = {k: round(z * 1000, 1) for k, z in low.items() if z < -0.004}

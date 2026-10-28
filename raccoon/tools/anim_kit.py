@@ -409,6 +409,21 @@ def _pose_crew_frames(crew_objs, f):
     bpy.context.scene.frame_set(f)
 
 
+def offset_clip(rig, frames):
+    """Play this raccoon's clip `frames` ahead of the others (two runners half a lap apart): its action is copied,
+    keyed `frames` earlier and made cyclic, so scene frame f shows clip frame f + frames (QA and renders alike)."""
+    act = rig.animation_data.action.copy()
+    rig.animation_data.action = act
+    for fc in _fcurves(act):
+        for kp in fc.keyframe_points:
+            kp.co.x -= frames
+            kp.handle_left.x -= frames
+            kp.handle_right.x -= frames
+        if not any(m.type == "CYCLES" for m in fc.modifiers):
+            fc.modifiers.new("CYCLES")
+    rig["_cyc"] = True
+
+
 def _fcurves(act):
     """F-curves of an action (Blender 5 keeps them in the action's layers / strips / channel bags)."""
     try:

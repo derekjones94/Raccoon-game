@@ -48,6 +48,8 @@ raccoon.global_transform = spot.global_transform
 | `prop_pestle.glb` | Infirmary | `work_grind` |
 | `prop_spear.glb` | Guard post | `work_guard` |
 | `prop_brush.glb` | Janitor shed | `work_sweep` |
+| `prop_lockpick.glb` | Practice yard | `work_picklock` |
+| `prop_stick.glb` | Sparring ring | `work_spar` |
 
 To attach a tool:
 1. Add a `BoneAttachment3D` on the raccoon's skeleton, bone **`handslot.r`**.
@@ -106,6 +108,10 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_junk_throne_1x1` | `spot_seat` (on the throne) | `work_drink` (96) | `prop_mug` | `work` (48) while it's taken |
 | `bld_dice_table_1x1` | `spot_seat_1`, `_2` (on the cushions, on the diagonals) | `work_chat` (96) | none | `work` (48) while anyone plays |
 | `bld_kit_swing_1x1` | `spot_swing` (a child of `pr_swing`) | `work_swing` (48), on `chr_raccoon_kit` | none | `work` (48) |
+| `bld_practice_yard_3x2` | `spot_pick` (at the lock board) | `work_picklock` (48) | `prop_lockpick` | `work` (48) |
+| `bld_practice_yard_3x2` | `spot_lift` (at the dummy) | `work_lift` (48) | none | `work` (48) |
+| `bld_shadow_course_2x2` | `spot_course` (up to two runners) | `work_course` (264, **travels**: see below) | none | `work` (264) |
+| `bld_sparring_ring_2x2` | `spot_spar_1`, `_2` (facing each other) | `work_spar` (48), the second **24 frames after** the first | `prop_stick` | `work` (48) |
 
 All clips are 24 fps and loop.
 
@@ -175,9 +181,20 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Junk throne:** the sitter's tail goes back under the backrest and lies along the seat; that's why the backrest stands on posts with a gap below it.
 - **Dice table:** the players sit on the diagonals, side-on to the game camera. That's the only way two seated raccoons and their tails fit on one cell.
 
+### Batch 6: training
+
+- **Shadow course, `work_course` travels.** This is the first clip that moves the raccoon around: the raccoon's node stays on `spot_course`, and the clip carries its body round the whole lap (its hips bone moves and turns), hopping up onto the plank and back down. So:
+  - put the raccoon on the spot, facing the spot's way, and play `work_course` from frame 0;
+  - don't move the raccoon's node while it plays (the clip does the moving), and don't blend it with a walk;
+  - the lap ends back at the start, so it loops cleanly;
+  - for a second runner, start the same clip **132 frames later** (half a lap); the course is checked with two runners like that.
+  - The building's `work` is the same length (264): the cardboard weasel turns its back while each runner sneaks under the bells, and the bells jingle as they pass. Start the building's `work` with the first runner.
+- **Sparring ring:** both fighters play `work_spar`; start the second one 24 frames after the first. One thrusts while the other blocks, so the padded sticks meet and the raccoons never touch.
+- **Practice yard:** the picked padlock springs open on the lock-pick clip's cue, and the purse follows the thief's paw, so start each raccoon's clip with the building's `work` (all 48 frames).
+
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have nineteen job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`.
+- **Adults** (`chr_raccoon`) have twenty-three job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`, `work_picklock`, `work_lift`, `work_spar`, `work_course`.
 - **Kits** (`chr_raccoon_kit`) have two: `work_listen` (training nook) and `work_swing` (kit swing). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
 - **The elder** (`chr_raccoon_elder`) has one: `work_teach` (training nook), leaning on his cane with his right paw and teaching with his left.
 

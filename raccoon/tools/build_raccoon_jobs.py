@@ -751,6 +751,259 @@ def swing(p):
     return rots, -0.05, "seat", {"r": (V((-g.x, g.y, g.z)), None, None), "l": (g, None, None)}
 
 
+ELBOW_OUT_R = -LEFT * 1.0 - UP * 0.5 + FWD * 0.1        # IK poles: elbows out to the side, clear of the chest
+ELBOW_OUT_L = LEFT * 1.0 - UP * 0.5 + FWD * 0.1
+LOCK_C = loc(f=0.19, u=0.17, l=-0.02)                  # the practice padlock's keyhole (the pick's tip goes in)
+LOCK_POP = 0.62                                        # when the lock springs open (the building pops its shackle)
+
+
+def picklock(p):
+    """At the practice yard's lock board: ear to the lock, the left paw steadying it, the right working a pick in
+    the keyhole -- tiny jiggles and twists, a pause to listen, then the lock springs (LOCK_POP) and a pleased
+    straighten-up; it snaps the lock shut again for another go. 48 frames."""
+    work = 1 - ramp(p, LOCK_POP - 0.04, LOCK_POP) * (1 - ramp(p, 0.9, 0.97))
+    jig = work * (0.003 * math.sin(TAU * 9 * p) + 0.002 * math.sin(TAU * 13 * p + 1))
+    twist = work * 25 * math.sin(TAU * 6 * p)
+    pleased = ramp(p, LOCK_POP, LOCK_POP + 0.06) * (1 - ramp(p, 0.86, 0.94))
+    tip = LOCK_C + loc(u=jig, f=-0.004 * (1 - work))
+    d = (FWD * 0.9 + LEFT * 0.4).normalized()                         # the pick comes in from the right paw's side
+    Ts = Quaternion(d, math.radians(twist)).to_matrix() @ frame_yz(d, UP)
+    grip = tip - Ts @ T.PICK_TIP
+    rots = act({
+        "upperleg.l": [(Y, -6), (X, -14)], "upperleg.r": [(Y, 6), (X, -14)], "lowerleg.l": [(X, 22)], "lowerleg.r": [(X, 22)],
+        "foot.l": [(X, -8)], "foot.r": [(X, -8)],
+        "spine": [(X, 10 - 6 * pleased)], "chest": [(X, 4)],
+        "head": [(Z, 18 * (1 - pleased)), (Y, -10 * (1 - pleased)), (X, 6 - 10 * pleased)],    # ear to the lock
+        "ear.l": [(Y, 30)], "ear.r": [(Y, -10 - 20 * pleased)],
+    }, tail_sway(p, 6 + 6 * pleased, 2))
+    return rots, 0.0, "legs", {"r": (grip, Ts, ELBOW_OUT_R), "l": (loc(f=0.09, u=0.145, l=0.085), None, ELBOW_OUT_L)}
+
+
+PURSE_HOOK = loc(f=0.1, u=0.16, l=-0.115)              # where the practice purse hangs on the dummy's belt (right of centre)
+COAT_PAW = loc(f=0.11, u=0.15, l=0.06)                 # the left paw steadies the dummy's coat here
+
+
+def lift_purse(p):
+    """The purse's offset from its hook as the thief lifts it (both the clip and the building follow this)."""
+    up = ramp(p, 0.22, 0.34) * (1 - ramp(p, 0.62, 0.74))
+    out = ramp(p, 0.3, 0.42) * (1 - ramp(p, 0.56, 0.66))
+    return loc(u=0.04 * up, l=-0.02 * out, f=-0.02 * out)
+
+
+def lift(p):
+    """Pickpocket practice at the straw dummy: the left paw flat on its coat to steady it, the right paw takes the
+    purse off its hook, lifts it out to the side, a quick look round, then hangs it back and eases off. 48 frames."""
+    hold = ramp(p, 0.1, 0.2) * (1 - ramp(p, 0.8, 0.9))
+    look = math.exp(-((p - 0.47) ** 2) / 0.003) - math.exp(-((p - 0.53) ** 2) / 0.003)
+    rest_r = loc(f=0.055, u=0.101, l=-0.086)                        # where the hanging paw is (not solved at rest)
+    purse_top = PURSE_HOOK + lift_purse(p) + loc(u=-0.012)               # the paw pinches the purse's neck
+    pr = rest_r.lerp(purse_top, hold) + loc(f=0.02 * math.sin(math.pi * hold))
+    steady = ramp(p, 0.04, 0.12) * (1 - ramp(p, 0.9, 0.98))
+    pl = loc(f=0.1, u=0.12, l=0.08).lerp(COAT_PAW, steady)
+    rots = act({
+        "upperleg.l": [(Y, -4)], "upperleg.r": [(Y, 4)],
+        "spine": [(X, 2)], "head": [(Z, 35 * look), (X, -4)],
+        "ear.l": [(Y, 34)], "ear.r": [(Y, -34)],
+        "tail_1": [(X, -20)],
+    }, tail_sway(p, 4, 1))
+    hang_pole = -UP * 1.0 - LEFT * 0.15 + FWD * 0.15                  # the hanging arm's elbow: straight below
+    pole = hang_pole.lerp(-LEFT * 1.0 + V((0, 0.4, 0)), hold)
+    arms = {"l": (pl, None, ELBOW_OUT_L)}
+    if hold > 0.0:                                                     # at rest the right arm just hangs
+        arms["r"] = (pr, None, pole)
+    return rots, 0.0, "legs", arms
+
+
+SPAR_GAP = 0.48                                        # between the two sparring partners' spots
+
+
+GUARD_GRIP, GUARD_DIR = loc(f=0.12, u=0.15, l=-0.09), (FWD * 0.6 + UP * 0.75 + LEFT * 0.2).normalized()
+
+
+def _spar_half(t):
+    """One fighter's attack half (t 0..1): wind up, thrust (the pad stops at the partner's stick), recover.
+    Returns (grip, stick direction, how far into the thrust)."""
+    wind = ramp(t, 0.1, 0.3) * (1 - ramp(t, 0.3, 0.4))
+    thrust = ramp(t, 0.3, 0.42) * (1 - ramp(t, 0.6, 0.85))
+    grip = GUARD_GRIP + loc(f=-0.02 * wind + 0.03 * thrust, u=0.03 * wind, l=0.02 * thrust)
+    d = GUARD_DIR.lerp((FWD * 0.95 + UP * 0.14 + LEFT * 0.3).normalized(), thrust).lerp(
+        (FWD * 0.3 + UP * 0.8 - LEFT * 0.4).normalized(), wind).normalized()          # wound back over its shoulder
+    return grip, d, thrust
+
+
+def _block_half(t):
+    """The other half: the stick held across in front of the chest to take the partner's thrust."""
+    up = ramp(t, 0.15, 0.32) * (1 - ramp(t, 0.7, 0.9))
+    grip = GUARD_GRIP.lerp(loc(f=0.12, u=0.19, l=-0.08), up)
+    d = GUARD_DIR.lerp((LEFT * 0.8 + FWD * 0.4 + UP * 0.2).normalized(), up).normalized()
+    return grip, d, up
+
+
+def spar(p):
+    """Sparring with padded sticks, facing a partner SPAR_GAP away playing the same clip half a loop later: the
+    first half it thrusts (the pad stops on the partner's raised stick), the second half it blocks. Bouncing on its
+    toes in between, the free paw up in guard. 48 frames."""
+    if p < 0.5:
+        grip, d, a = _spar_half(p * 2)
+        lunge, block = a, 0.0
+    else:
+        grip, d, b = _block_half((p - 0.5) * 2)
+        lunge, block = 0.0, b
+    Ts = frame_yz(d, (UP * 0.6 - FWD * 0.8).normalized())          # one steady roll hint: no flips mid-swing
+    bounce = abs(math.sin(TAU * 4 * p)) * (1 - max(lunge, block))
+    rots = act({
+        "upperleg.l": [(Y, -10), (X, -20 - 12 * lunge)], "upperleg.r": [(Y, 10), (X, -14 + 8 * lunge)],
+        "lowerleg.l": [(X, 30 + 8 * lunge)], "lowerleg.r": [(X, 26)],
+        "foot.l": [(X, -10)], "foot.r": [(X, -12)],
+        "spine": [(X, 6 + 8 * lunge - 4 * block)], "chest": [(Z, -8 * lunge)],
+        "head": [(X, -4), (Z, 4 * lunge)],
+        "ear.l": [(Y, 20 + 10 * block)], "ear.r": [(Y, -20 - 10 * block)],
+    }, tail_sway(p, 8, 2))
+    return rots, 0.006 * bounce, "legs", {"r": (grip, Ts, -LEFT * 0.6 - UP * 1.0), "l": (loc(f=0.1, u=0.2, l=0.07), None, ELBOW_OUT_L)}
+
+
+# ---------------------------------------------------------------- the shadow course: a clip that travels a route
+# Building coordinates of bld_shadow_course_2x2 (its spot_course sits at COURSE_SPOT, facing -Y with no turn, so the
+# clip's own space is the building's, shifted). Each waypoint starts a segment of that kind; the route is closed.
+COURSE_SPOT = V((0.5, -0.52, 0.0))
+BEAM_H = 0.1                                    # the balance log's walking height
+HURDLE_H = 0.1
+COURSE = [((0.5, -0.52), "run"), ((0.1, -0.56), "sneak"), ((-0.42, -0.56), "run"), ((-0.62, -0.42), "hopup"),
+          ((-0.64, -0.2), "beam"), ((-0.64, 0.36), "hopdown"), ((-0.58, 0.6), "run"), ((-0.3, 0.66), "sneak"),
+          ((0.22, 0.64), "run"), ((0.56, 0.44), "hop"), ((0.6, 0.06), "run"), ((0.62, -0.2), "run")]
+SPEED = {"run": 0.5, "sneak": 0.26, "beam": 0.3}
+STRIDE = {"run": 0.26, "sneak": 0.12, "beam": 0.15}   # metres per gait cycle (two steps)
+HOP_S = 0.45                                    # seconds a hop takes
+BLEND = 0.06                                    # seconds either side of a change of gait to blend over
+
+
+def _cr(p0, p1, p2, p3, t):
+    return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3)
+
+
+def _course_table():
+    """Sample the closed route: per segment its samples (point, cumulative length), kind, time and gait cycles."""
+    pts = [V((x, y, 0)) for (x, y), _ in COURSE]
+    n = len(pts)
+    segs = []
+    for i in range(n):
+        p0, p1, p2, p3 = pts[i - 1], pts[i], pts[(i + 1) % n], pts[(i + 2) % n]
+        smp, L, prev = [], 0.0, p1
+        for k in range(41):
+            q = _cr(p0, p1, p2, p3, k / 40)
+            L += (q - prev).length
+            smp.append((q, L))
+            prev = q
+        kind = COURSE[i][1]
+        t = HOP_S if kind.startswith("hop") else L / SPEED[kind]
+        cyc = 0.5 if kind.startswith("hop") else L / STRIDE[kind]
+        segs.append({"smp": smp, "L": L, "kind": kind, "t": t, "cyc": cyc})
+    total_t = sum(sg["t"] for sg in segs)
+    gait = sum(sg["cyc"] for sg in segs if not sg["kind"].startswith("hop"))
+    k = round(gait) / gait                                     # whole gait cycles round the loop: it closes
+    for sg in segs:
+        if not sg["kind"].startswith("hop"):
+            sg["cyc"] *= k
+    return segs, total_t
+
+
+COURSE_SEGS, COURSE_T = _course_table()
+COURSE_FRAMES = int(round(COURSE_T * 24 / 8)) * 8          # a multiple of 8 frames
+
+
+def _seg_at(p):
+    """(segment index, local fraction) at loop phase p."""
+    t = (p % 1.0) * COURSE_T
+    for i, sg in enumerate(COURSE_SEGS):
+        if t < sg["t"] or i == len(COURSE_SEGS) - 1:
+            return i, min(1.0, t / sg["t"])
+        t -= sg["t"]
+
+
+def _point(sg, u):
+    """Point and tangent at fraction u of a segment's length."""
+    target = u * sg["L"]
+    smp = sg["smp"]
+    for (a, la), (b, lb) in zip(smp, smp[1:]):
+        if lb >= target:
+            w = 0.0 if lb == la else (target - la) / (lb - la)
+            return a.lerp(b, w), (b - a).normalized()
+    return smp[-1][0], (smp[-1][0] - smp[-2][0]).normalized()
+
+
+def course_pos(p):
+    """Where the runner is (building coords, z = the floor under it) and its heading, at loop phase p."""
+    i, u = _seg_at(p)
+    sg = COURSE_SEGS[i]
+    q, tng = _point(sg, u)
+    floor = {"beam": BEAM_H, "hopdown": BEAM_H * (1 - smooth(u)), "hopup": BEAM_H * smooth(u)}.get(sg["kind"], 0.0)
+    return V((q.x, q.y, floor)), tng
+
+
+def _gait_phase(p):
+    i, u = _seg_at(p)
+    return sum(sg["cyc"] for sg in COURSE_SEGS[:i]) + COURSE_SEGS[i]["cyc"] * u
+
+
+def _gait_pose(kind, ph, u):
+    """Rotations and hips offset for one kind of movement at gait phase ph (u: fraction through a hop)."""
+    if kind == "run":
+        rots, bob = AN.walk(ph % 1.0, stride=34, arms=False)
+        sw = 0.5 * 34 * AN.s(ph % 1.0)          # arms held a little out, pumping forward from a forward rest: never
+        fl, fr = max(0.0, sw), max(0.0, -sw)    # swung back past the side (that puts the elbow in the belly)
+        return merge(rots, {"spine": [(X, 5)], "head": [(X, -6)], "ear.l": [(Y, 18)], "ear.r": [(Y, -18)],
+                            "upperarm.l": [(Y, -30), (X, -12 - fl)], "upperarm.r": [(Y, 30), (X, -12 - fr)],
+                            "lowerarm.l": [(X, -18 - 0.4 * fl)], "lowerarm.r": [(X, -18 - 0.4 * fr)]}), bob, 0.0
+    if kind == "sneak":
+        rots, dz = AN.sneak(ph % 1.0)
+        return rots, dz, 0.0
+    if kind == "beam":
+        rots, bob = AN.walk(ph % 1.0, stride=16, arms=False)
+        return merge(rots, {"upperarm.l": [(Y, -68), (X, -10)], "upperarm.r": [(Y, 68), (X, -10)],
+                            "lowerarm.l": [(X, -12)], "lowerarm.r": [(X, -12)], "ear.l": [(Y, 24)], "ear.r": [(Y, -24)]}), \
+            bob * 0.5, 0.0
+    tuck = math.sin(math.pi * u)                                       # a hop: legs tuck, arms reach, an arc
+    rots = act({
+        "upperleg.l": [(Y, -8), (X, -20 - 40 * tuck)], "upperleg.r": [(Y, 8), (X, -20 - 40 * tuck)],
+        "lowerleg.l": [(X, 30 + 50 * tuck)], "lowerleg.r": [(X, 30 + 50 * tuck)],
+        "foot.l": [(X, -10 - 20 * tuck)], "foot.r": [(X, -10 - 20 * tuck)],
+        "upperarm.l": [(Y, -20), (X, -30 - 30 * tuck)], "upperarm.r": [(Y, 20), (X, -30 - 30 * tuck)],
+        "lowerarm.l": [(X, -30)], "lowerarm.r": [(X, -30)],
+        "spine": [(X, 10 + 6 * tuck)], "head": [(X, -10)], "ear.l": [(Y, 30)], "ear.r": [(Y, -30)],
+        "tail_1": [(X, 10 * tuck)],
+    }, tail_sway(u, 8, 1))
+    arc = (0.16 if kind == "hop" else 0.08) * math.sin(math.pi * u)
+    return rots, -0.01, arc
+
+
+def course(p):
+    """Running the shadow course: dash along the front, sneak under the bell rope, hop up onto the log and balance
+    along it, hop down, sneak past the lantern, dash, hop the hurdle and run back to the start. One lap a loop; the
+    route is COURSE (building coordinates). Returns a fifth item: (x, y, heading, floor) for the baker."""
+    i, u = _seg_at(p)
+    sg = COURSE_SEGS[i]
+    ph = _gait_phase(p)
+    rots, dz, arc = _gait_pose(sg["kind"], ph, u)
+    tleft, tright = u * sg["t"], (1 - u) * sg["t"]                     # blend into the next / from the previous gait
+    blend = None
+    if tright < BLEND:
+        nk = COURSE_SEGS[(i + 1) % len(COURSE_SEGS)]["kind"]
+        if nk != sg["kind"]:
+            blend = (nk, 0.5 * (1 - tright / BLEND), 0.0)
+    elif tleft < BLEND:
+        pk = COURSE_SEGS[i - 1]["kind"]
+        if pk != sg["kind"]:
+            blend = (pk, 0.5 * (1 - tleft / BLEND), 1.0)
+    if blend:
+        k2, w, u2 = blend
+        r2, dz2, arc2 = _gait_pose(k2, ph, u2)
+        rots = ("BLEND", rots, r2, w)
+        dz = dz * (1 - w) + dz2 * w
+    pos, tng = course_pos(p)
+    yaw = math.degrees(math.atan2(tng.x, -tng.y))
+    return rots, dz, "legs", {}, (pos.x - COURSE_SPOT.x, pos.y - COURSE_SPOT.y, yaw, pos.z + arc)
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -776,6 +1029,10 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_mourn": (mourn, 96, None),
     "work_sweep": (sweep, 48, "prop_brush"),
     "work_swing": (swing, 48, None),
+    "work_course": (course, COURSE_FRAMES, None),
+    "work_picklock": (picklock, 48, "prop_lockpick"),
+    "work_lift": (lift, 48, None),
+    "work_spar": (spar, 48, "prop_stick"),
 }
 JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit", "work_swing": "chr_raccoon_kit"}   # everything else: the adult
 
@@ -867,6 +1124,13 @@ def arm_intrusion(rig, ob, fverts):
     return res
 
 
+def blend_quats(rig, ra, rb, w):
+    """Pose quaternions part-way (w) from one rotation set to another (each bone's pose rotation slerped), so a change
+    of gait (run to sneak) eases over a few frames instead of snapping."""
+    qa, qb = pose_quats(rig, ra), pose_quats(rig, rb)
+    return {n: qa[n].slerp(qb[n], w) for n in qa}
+
+
 # ---------------------------------------------------------------- baking
 def bake_job(rig, ob, name, k, report=None):
     """Key a job clip on every frame, ground-locked, arms solved onto their targets."""
@@ -886,22 +1150,38 @@ def bake_job(rig, ob, name, k, report=None):
     t1 = rig.data.bones["tail_1"]
     lift_ax = (t1.tail_local - t1.head_local).normalized().cross(V((0, 0, 1))).normalized()
 
+    hips_inv = hips.matrix_local.to_3x3().inverted()
+    travel = [V(), 0.0]                                    # a clip that travels: the hips' offset and heading this frame
+    hm = hips.matrix_local.to_3x3().normalized()
+
     def pose(rots, z):
         qs = pose_quats(rig, rots)
+        if travel[1]:                                       # the heading turns the whole posed body as one, about the
+            yq = Quaternion(V((0, 0, 1)), math.radians(travel[1]))          # vertical: the root's rotation only
+            qs["hips"] = (hm.inverted() @ yq.to_matrix() @ hm).to_quaternion() @ qs["hips"]
         for pb in rig.pose.bones:
             pb.rotation_mode = "QUATERNION"
             pb.rotation_quaternion = qs[pb.name]
             pb.location = (0, 0, 0)
-        rig.pose.bones["hips"].location = up_local * z
+        rig.pose.bones["hips"].location = up_local * z + hips_inv @ travel[0]
         bpy.context.view_layer.update()
     worst = 0.0
     fverts = _forearm_verts(rig, ob)
     pushes = {"l": V(), "r": V()}                          # carried frame to frame: smooth, no popping
     for f in range(frames + 1):
-        rots, dz, support, arms = fn((f / frames) % 1.0)
+        out = fn((f / frames) % 1.0)
+        rots, dz, support, arms = out[:4]
+        floor = 0.0
+        if len(out) > 4:                                    # a travelling clip: where it is, its heading, the floor
+            tx, ty, yaw, floor = out[4]
+            travel[0] = V((tx, ty, 0)) * ratio
+            travel[1] = yaw
+            floor *= ratio
+        if isinstance(rots, tuple):                         # a change of gait: resolve the blend to plain rotations
+            rots = {n: [("LOCALQ", q)] for n, q in blend_quats(rig, rots[1], rots[2], rots[3]).items()}
         z = dz * k
         pose(rots, z)
-        z -= AN._lowest(ob, legs if support == "legs" else seat)
+        z -= AN._lowest(ob, legs if support == "legs" else seat) - floor
         pose(rots, z)
         if tail and AN._lowest(ob, tail) < -0.001:
             lo, hi = 0.0, 70.0

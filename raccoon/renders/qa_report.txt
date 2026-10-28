@@ -58,8 +58,7 @@ sneak  OK    limb into body  5.7 mm (arm_R @ 8, near upperarm.r joint, z 0.253) 
 sleep  OK    limb into body 10.7 mm (arm_R @ 0, near upperarm.r joint, z 0.206 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN
 
-
-== chr_raccoon job clips (batches 1-4)
+== chr_raccoon job clips (batches 1-6)
 work_chop    OK    limb into body 11.9 mm (arm_R @ 16, near upperarm.r joint, z 0.207 = joint crease, ok) | under the floor (mm): none
 work_fish    OK    limb into body  5.7 mm (arm_R @ 12, near upperarm.r joint, z 0.173) | under the floor (mm): none
 work_scrub   OK    limb into body  6.6 mm (thigh_R @ 18, near upperleg.r joint, z 0.055 = joint crease, ok) | under the floor (mm): none
@@ -75,6 +74,14 @@ work_drink   OK    limb into body  5.3 mm (thigh_L @ 48, near upperleg.l joint, 
 work_chat    OK    limb into body  5.4 mm (thigh_L @ 76, near upperleg.l joint, z 0.066) | under the floor (mm): none
 work_grind   OK    limb into body  9.2 mm (arm_R @ 14, near upperarm.r joint, z 0.175 = joint crease, ok) | under the floor (mm): none
 work_read    OK    limb into body  9.9 mm (arm_L @ 24, near upperarm.l joint, z 0.187 = joint crease, ok) | under the floor (mm): none
+work_guard   OK    limb into body  3.1 mm (arm_L @ 72, near upperarm.l joint, z 0.219) | under the floor (mm): none
+work_ring    OK    limb into body 10.7 mm (arm_R @ 0, near upperarm.r joint, z 0.225 = joint crease, ok) | under the floor (mm): none
+work_mourn   OK    limb into body 10.6 mm (arm_R @ 50, near upperarm.r joint, z 0.216 = joint crease, ok) | under the floor (mm): none
+work_sweep   OK    limb into body  6.6 mm (thigh_R @ 0, near upperleg.r joint, z 0.055 = joint crease, ok) | under the floor (mm): none
+work_course  OK    limb into body  9.8 mm (arm_L @ 94, near upperarm.l joint, z 0.310 = joint crease, ok) | under the floor (mm): none
+work_picklock OK    limb into body  7.2 mm (arm_R @ 10, near upperarm.r joint, z 0.219 = joint crease, ok) | under the floor (mm): none
+work_lift    OK    limb into body 10.3 mm (arm_R @ 22, near upperarm.r joint, z 0.211 = joint crease, ok) | under the floor (mm): none
+work_spar    OK    limb into body  7.6 mm (arm_L @ 16, near upperarm.l joint, z 0.215 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN
 
 == chr_raccoon_elder job clips
@@ -83,4 +90,5 @@ ALL CLEAN
 
 == chr_raccoon_kit job clips
 work_listen  OK    limb into body 10.9 mm (arm_R @ 62, near upperarm.r joint, z 0.121 = joint crease, ok) | under the floor (mm): none
+work_swing   OK    limb into body  6.6 mm (arm_L @ 14, near upperarm.l joint, z 0.106 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN

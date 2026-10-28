@@ -42,6 +42,8 @@ MUG_R, MUG_H = 0.021, 0.046
 PESTLE_TIP = V((0.0, 0.07, 0.0))  
 SPEAR_BUTT, SPEAR_TIP = -0.118, 0.33  # along Y from the grip
 BRUSH_C = V((-0.012, 0.075, 0.0))   # middle of the brush's bristle block (its bristles face -X)
+PICK_TIP = V((0.0, 0.075, 0.0))      # a lock pick's hooked tip (slot space): it goes into the keyhole
+STICK_BUTT, STICK_TIP = -0.008, 0.18  # a padded practice stick, along Y from the grip
 BRUSH_TILT = 27.0                     # degrees the head is turned from the handle (work_sweep holds it 27 deg down)    # the pestle's grinding end, slot space
 
 
@@ -162,6 +164,26 @@ def prop_brush(coll):
     return m.obj("prop_brush", coll)
 
 
+def prop_lockpick(coll):
+    """A thief's lock pick: a little wooden handle in the fist, a thin iron wire along +Y with a hooked tip."""
+    m = B.M()
+    m.cyl(V((0, 0.005, 0)), 0.006, 0.03, "wood_dark", axis=(0, 1, 0), segs=5, cap="wood_mid")
+    m.beam(V((0, 0.02, 0)), V((0, PICK_TIP.y - 0.006, 0)), 0.002, "iron_light")
+    m.beam(V((0, PICK_TIP.y - 0.007, 0)), PICK_TIP + V((0, 0, 0.004)), 0.002, "iron_light")        # the hook
+    return m.obj("prop_lockpick", coll)
+
+
+def prop_stick(coll):
+    """A padded practice stick for sparring: a wooden rod along +Y, a wrapped grip, a cloth pad on the tip."""
+    m = B.M()
+    L = STICK_TIP - 0.03 - STICK_BUTT
+    m.cyl(V((0, STICK_BUTT + L / 2, 0)), 0.006, L, "wood_mid", axis=(0, 1, 0), segs=5, cap="wood_dark")
+    m.cyl(V((0, 0.0, 0)), 0.0075, 0.05, "leather", axis=(0, 1, 0), segs=6)                          # grip wrap
+    m.blob(V((0, STICK_TIP - 0.018, 0)), V((0.014, 0.022, 0.014)), "cloth_cream", 6, 4)            # the pad
+    m.cyl(V((0, STICK_TIP - 0.036, 0)), 0.009, 0.006, "rope", axis=(0, 1, 0), segs=6)
+    return m.obj("prop_stick", coll)
+
+
 def main():
     bpy.ops.wm.open_mainfile(filepath=str(ROOT / "template.blend"))
     bpy.data.materials["M_Palette"].node_tree.nodes["Image Texture"].image.reload()
@@ -169,7 +191,8 @@ def main():
     for o in list(ref.objects):
         bpy.data.objects.remove(o)
     coll = bpy.data.collections["Assets"]
-    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle, prop_mug, prop_pestle, prop_spear, prop_brush):
+    for fn in (prop_axe, prop_fishing_rod, prop_watering_can, prop_hammer, prop_ladle, prop_mug, prop_pestle, prop_spear, prop_brush,
+               prop_lockpick, prop_stick):
         ob = fn(coll)
         print(f"STAT {ob.name}: {K.tris(ob)} tris")
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT / "tools.blend"), relative_remap=True)
