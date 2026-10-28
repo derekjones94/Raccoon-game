@@ -101,6 +101,7 @@ Detach the tool, or hide it, when the raccoon stops working.
 | `bld_haulers_lodge_2x2` | `spot_work` (behind the dray) | `work_stash` (48) | none | `work` (48) |
 | `bld_haulers_lodge_2x2` | `spot_rest_1`, `_2` (on the bunks) | `sleep` (72, the base clip) | none | (any) |
 | `bld_janitor_shed_2x1` | `spot_work` (on the flagstones) | `work_sweep` (48) | `prop_brush` | `work` (48) |
+| `bld_coin_fountain_2x2` | `spot_seat_1` to `_4` (on the rim, facing the water) | `work_drink` (96) or `work_chat` (96) | `prop_mug` with `work_drink` | `work` (48) while anyone's there |
 
 All clips are 24 fps and loop.
 
@@ -156,6 +157,13 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Graveyard:** a gardener tends the fresh grave (`work_tend`, the cave garden's clip), and up to two mourners stand at the foot of graves with their heads bowed (`work_mourn`). About 3,900 triangles: a 3×3 lot with a wall all round.
 - **Haulers' lodge:** off-shift haulers sleep on the two bunks in the shed. The loader packs the dray with `work_stash`, the stockpile's clip.
 - **Janitor shed:** the dustpan is part of the building, with its handle at the janitor's left paw.
+
+### Decorations
+
+- **Decorations** (`bld_coin_fountain_2x2`, `bld_goblet_planter_1x1`, `bld_mirror_mosaic_1x1`, `bld_trophy_case_1x1`, `bld_duke_portrait_1x1`) have the same two clips as the buildings, `idle` and `work`, but they're identical: decorations have no work of their own. Just loop `idle`. They're checked like the buildings.
+- **Coin fountain:** raccoons sit on the rim facing the water, with their toes over it and their tails hanging off the back of the rim toward the lot's corners. So keep those corners clear. It reads best outdoors.
+- **Trophy case:** one child node per relic, `pr_relic_caravan_bell` and `pr_relic_duke_signet`. Both are in the file and both play the same slow turn; show the one the colony owns and hide the rest. To add a relic, ask for another node like these.
+- **Duke portrait:** a still painting; only the candle moves.
 
 ## 6. Who does which job
 

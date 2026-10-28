@@ -346,7 +346,7 @@ def report(name, probs, path):
 
 
 def render_loops(root, crew_objs, out_gif, target, dist, pitch=48, yaw=-30, res=(640, 480), step=2,
-                 idle_frames=None, work_repeat=1, label=None, samples=14, grid_n=5, hide_in_work=()):
+                 idle_frames=None, work_repeat=1, label=None, samples=14, grid_n=5, hide_in_work=(), idle_only=False):
     """The building's idle loop (no raccoon) then its work loop (raccoons shown), from the game camera, as a GIF.
     crew_objs: objects to show only in the work part (rigs, meshes, tools)."""
     from PIL import Image, ImageDraw, ImageFont
@@ -368,7 +368,8 @@ def render_loops(root, crew_objs, out_gif, target, dist, pitch=48, yaw=-30, res=
     movers = [o for o in objs if o.animation_data and o.animation_data.nla_tracks]
     tmp = ROOT / "renders" / "_loop.png"
     imgs = []
-    for clip, show_crew, reps in (("idle", False, 1), ("work", True, work_repeat)):
+    loops = (("idle", False, 1),) if idle_only else (("idle", False, 1), ("work", True, work_repeat))
+    for clip, show_crew, reps in loops:                 # idle_only: decorations, whose work is their idle
         n = clip_frames(movers, clip) or 48
         n_show = idle_frames if (clip == "idle" and idle_frames) else n
         for o in crew_objs:

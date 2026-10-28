@@ -47,3 +47,13 @@
 == bld_janitor_shed_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_alarm_bell_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_coin_fountain_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_goblet_planter_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_mirror_mosaic_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_trophy_case_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)

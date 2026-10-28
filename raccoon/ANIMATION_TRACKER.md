@@ -98,3 +98,34 @@ Also new in batch 5:
 | `bld_sparring_ring_2x2` | stand-in, **2.4 m wide on a 2×2 lot** | 🔁 rebuild to fit | ⬜ shield wobbles | ⬜ dust puffs | ⬜ two raccoons spar (may need more effort) | ⬜ | ⬜ |
 | `kit_ladder` | ours | — | — still | — | climb (`walk` for now) | ⬜ | ⬜ |
 | `kit_stairs` | ours | — | — still | — | — | ⬜ | ⬜ |
+
+## Decorations (requested 2026-10-27)
+
+Our own decoration models, in the batch style: an `idle` loop, plus `spot_` markers where raccoons use them. They come before batch 6, in three groups with a sign-off after each. Costs from the request are in brackets.
+
+### Decorations D1: loot on show. Done, awaiting your sign-off
+
+| Model | What it is | `idle` | Raccoons | QA | Signed off |
+|---|---|---|---|---|---|
+| `bld_coin_fountain_2x2` | ✅ an octagonal basin on a flagstone pad, coins round its wall and in the shallows, a coin heap at the foot of two stone bowls, a gold money bag spouting on top, flower bushes | ✅ water spouts and runs from bowl to bowl, ripples spread, coins glint | ✅ four rim seats (`spot_seat_1` to `_4`) facing the water: `work_drink` / `work_chat` | ✅ clean, four sitters | ⬜ |
+| `bld_goblet_planter_1x1` | ✅ a raccoon-sized silver goblet with a gold band and set gems, full of soil, a fern and trailing ivy, on a stone plinth; coins and a spoon round it | ✅ the fronds sway, each a little behind the last | — | ✅ clean | ⬜ |
+| `bld_mirror_mosaic_1x1` | ✅ an arched panel on feet, a round mirror in a sunburst of bottle glass and mirror shards, a wire edge, a bead string with a spoon; bottles and chips below | ✅ glints flash across the shards in turn, the spoon charm swings | — | ✅ clean | ⬜ |
+| `bld_trophy_case_1x1` | ✅ a brass-edged glass case with a pointed lid on a turned-leg stand, a velvet cushion on a turning pedestal, a velvet rope in front; relics as child nodes: `pr_relic_caravan_bell`, `pr_relic_duke_signet` | ✅ the relic turns slowly, sparkles wink | — | ✅ clean | ⬜ |
+| `bld_duke_portrait_1x1` | ✅ a heavy gilt frame on an easel: the duke in a powdered wig, blue coat and sash, with a soot moustache and a raccoon mask painted on; a side table with a candle, the soot pot and the brush | ✅ the candle flickers, leans in a draught | — | ✅ clean | ⬜ |
+
+### Decorations D2: light and rest
+
+| Model | What it is | `idle` | Raccoons | QA | Signed off |
+|---|---|---|---|---|---|
+| `bld_string_lights_2x1` | Two posts with a sag of stolen lanterns between them (wood, metal bars) | ⬜ lanterns sway | — | ⬜ | ⬜ |
+| `bld_mushroom_lamp_1x1` | A tall glowing cave mushroom (herbs); for deep layers | ⬜ glow swells and fades | — | ⬜ | ⬜ |
+| `bld_bottlecap_banner_1x1` | Bottle caps and spoons strung between two sticks; cheap (scrap iron) | ⬜ caps jingle | — | ⬜ | ⬜ |
+| `bld_hammock_1x2` | A hammock slung between two crates | ⬜ rocks gently | ⬜ sleep in it | ⬜ | ⬜ |
+
+### Decorations D3: fun
+
+| Model | What it is | `idle` | Raccoons | QA | Signed off |
+|---|---|---|---|---|---|
+| `bld_junk_throne_1x1` | A throne of crates, a pot lid and a saddle (gold, wood) | ⬜ a pennant flutters | ⬜ the best thief sits | ⬜ | ⬜ |
+| `bld_dice_table_1x1` | An upturned crate with dice and coins | ⬜ a die wobbles now and then | ⬜ two players (`work_chat`) | ⬜ | ⬜ |
+| `bld_kit_swing_1x1` | A tyre swing on a frame, for the kits; outdoors | ⬜ swing sways | ⬜ a kit swings (new kit clip) | ⬜ | ⬜ |
