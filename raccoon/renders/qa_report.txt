@@ -58,7 +58,7 @@ sneak  OK    limb into body  5.7 mm (arm_R @ 8, near upperarm.r joint, z 0.253) 
 sleep  OK    limb into body 10.7 mm (arm_R @ 0, near upperarm.r joint, z 0.206 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN
 
-== chr_raccoon job clips (batches 1-6)
+== chr_raccoon job clips (batches 1-6, with the climbing clips)
 work_chop    OK    limb into body 11.9 mm (arm_R @ 16, near upperarm.r joint, z 0.207 = joint crease, ok) | under the floor (mm): none
 work_fish    OK    limb into body  5.7 mm (arm_R @ 12, near upperarm.r joint, z 0.173) | under the floor (mm): none
 work_scrub   OK    limb into body  6.6 mm (thigh_R @ 18, near upperleg.r joint, z 0.055 = joint crease, ok) | under the floor (mm): none
@@ -82,6 +82,10 @@ work_course  OK    limb into body  9.8 mm (arm_L @ 94, near upperarm.l joint, z 
 work_picklock OK    limb into body  7.2 mm (arm_R @ 10, near upperarm.r joint, z 0.219 = joint crease, ok) | under the floor (mm): none
 work_lift    OK    limb into body 10.3 mm (arm_R @ 22, near upperarm.r joint, z 0.211 = joint crease, ok) | under the floor (mm): none
 work_spar    OK    limb into body  7.6 mm (arm_L @ 16, near upperarm.l joint, z 0.215 = joint crease, ok) | under the floor (mm): none
+climb_stairs_up OK    limb into body  7.1 mm (thigh_R @ 52, near upperleg.r joint, z 0.789 = joint crease, ok) | under the floor (mm): none
+climb_stairs_down OK    limb into body  6.8 mm (thigh_R @ 8, near upperleg.r joint, z 0.112 = joint crease, ok) | under the floor (mm): none
+climb_ladder_up OK    limb into body  9.4 mm (arm_L @ 138, near upperarm.l joint, z 0.977 = joint crease, ok) | under the floor (mm): none
+climb_ladder_down OK    limb into body 10.1 mm (arm_L @ 40, near upperarm.l joint, z -0.019 = joint crease, ok) | under the floor (mm): none
 ALL CLEAN
 
 == chr_raccoon_elder job clips

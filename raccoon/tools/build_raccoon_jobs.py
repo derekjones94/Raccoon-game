@@ -44,6 +44,7 @@ from mathutils import Matrix, Quaternion, Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_raccoon_anims as AN  # noqa: E402
 from build_raccoon_anims import X, Y, Z, act, merge, pose_quats, tail_sway  # noqa: E402
+import build_kit_blockout as KB  # noqa: E402
 import build_tools as T  # noqa: E402
 
 V = Vector
@@ -142,6 +143,29 @@ def arm_rots(rig, side, grip, Ts=None, pole=None):
         rots[f"wrist.{sd}"] = [("MAT", D @ Mw)]
         rots[f"hand.{sd}"] = [("MAT", D @ Mh)]
     return rots, (W - Wr).length
+
+
+def leg_rots(rig, side, ankle, pole, toe_dir):
+    """Rotations that put the ankle (foot.<side>'s head) at `ankle` (armature space), the knee bending toward `pole`,
+    the foot pointing along `toe_dir`. The rig must already be posed for the body. Returns (rots, reach_miss)."""
+    sd = side
+    _, hu, tu = _rest(rig, f"upperleg.{sd}")
+    _, hl, tl = _rest(rig, f"lowerleg.{sd}")
+    a, b = (tu - hu).length, (tl - hl).length
+    S = rig.pose.bones[f"upperleg.{sd}"].head.copy()
+    d = ankle - S
+    L = d.length
+    di = d.normalized()
+    Lc = min(max(L, abs(a - b) + 1e-4), a + b - 1e-4)
+    x = (a * a - b * b + Lc * Lc) / (2 * Lc)
+    h = math.sqrt(max(a * a - x * x, 0.0))
+    pv = V(pole) - di * V(pole).dot(di)
+    pv = pv.normalized() if pv.length > 1e-6 else -FWD
+    E = S + di * x + pv * h
+    W = S + di * Lc
+    rots = {f"upperleg.{sd}": [("AIM", tuple(E - S))], f"lowerleg.{sd}": [("AIM", tuple(W - E))],
+            f"foot.{sd}": [("AIM", tuple(toe_dir))]}
+    return rots, (ankle - W).length
 
 
 # ---------------------------------------------------------------- the jobs
@@ -1004,6 +1028,280 @@ def course(p):
     return rots, dz, "legs", {}, (pos.x - COURSE_SPOT.x, pos.y - COURSE_SPOT.y, yaw, pos.z + arc)
 
 
+# ---------------------------------------------------------------- the stone stairs: hop up, hop down (one-way clips)
+# kit_stairs_stone: 6 steps, each 1/6 m high and 0.157 m deep, the first tread from y -0.47. The climber starts in
+# the cell in front (STAIRS_START, facing +Y up the stairs) and ends standing on the floor above, beyond the top step.
+STAIR_RISE, STAIR_RUN, STAIR_N = 1.0 / 6, 0.94 / 6, 6
+STAIRS_START = V((0.0, -0.62, 0.0))            # building coords (the stair piece's own), facing +Y
+STAIR_TAIL = {"tail_1": (0, 0.2, 0.98), "tail_2": (0, 0.55, 0.83), "tail_3": (0, 0.85, 0.53)}   # going down: the
+                                               # tail carried up and back (rig space: +Y is back), over the steps
+STAIR_FOOT_DOWN = 0.035                        # going down: nearer the step's nose, the tail clear of the riser
+STAIR_FOOT = 0.055                             # where the feet stand on a tread, from its nose (the belly clears the riser)
+HOP_T, REST_T = 0.42, 0.18                     # seconds per hop, and the breath between hops
+
+
+def _stair_stops(foot=None):
+    """Where the climber stands, in order: the floor in front, each tread, the floor above (y, z)."""
+    a = -0.47
+    stops = [(STAIRS_START.y, 0.0)]
+    for k in range(STAIR_N):
+        stops.append((a + k * STAIR_RUN + (foot or STAIR_FOOT), (k + 1) * STAIR_RISE))
+    stops.append((0.47 + 0.09, 1.0))
+    return stops
+
+
+STAIR_STOPS = _stair_stops()
+STAIR_OFF = 0.3                                # going down, a last hop on: the resting tail clear of the bottom step
+STAIR_STOPS_DOWN = _stair_stops(STAIR_FOOT_DOWN)[::-1]     # going down: near each tread's front (its riser behind)
+STAIR_STOPS_DOWN.append((STAIRS_START.y - STAIR_OFF, 0.0))
+STAIRS_T = len(STAIR_STOPS) * REST_T + (len(STAIR_STOPS) - 1) * HOP_T
+STAIRS_FRAMES = int(round(STAIRS_T * 24 / 4)) * 4
+STAIRS_DOWN_T = len(STAIR_STOPS_DOWN) * REST_T + (len(STAIR_STOPS_DOWN) - 1) * HOP_T
+STAIRS_DOWN_FRAMES = int(round(STAIRS_DOWN_T * 24 / 4)) * 4
+
+
+def _stairs_state(p, down):
+    """(y, floor z, hop fraction or None) at phase p of the climb (down: the same stops, the other way)."""
+    stops = STAIR_STOPS_DOWN if down else STAIR_STOPS
+    t = p * (STAIRS_DOWN_T if down else STAIRS_T)
+    for i in range(len(stops) - 1):
+        if t < REST_T:
+            return stops[i][0], stops[i][1], None
+        t -= REST_T
+        if t < HOP_T:
+            return None, None, (i, t / HOP_T)
+        t -= HOP_T
+    return stops[-1][0], stops[-1][1], None
+
+
+def stairs_path(p, down=False):
+    """The feet's (y, z) and the hop fraction (None standing) at phase p: up, a hop lifts first (the toes clear the
+    step's nose) then moves forward; down, it moves forward off the nose then drops."""
+    stops = STAIR_STOPS_DOWN if down else STAIR_STOPS
+    y, z, hop = _stairs_state(p, down)
+    if hop is None:
+        return y, z, None
+    i, u = hop
+    (y0, z0), (y1, z1) = stops[i], stops[i + 1]
+    if not down:
+        lift = smooth(min(1.0, u / 0.38))                # up past the step's nose first,
+        fwd = smooth(max(0.0, (u - 0.34) / 0.58))        # then forward onto the tread
+        z = z0 + (z1 - z0) * lift + 0.035 * math.sin(math.pi * min(1.0, u / 0.9))
+    else:
+        fwd = smooth(min(1.0, u / 0.55))
+        drop = smooth(max(0.0, (u - 0.35) / 0.55))
+        z = z0 + (z1 - z0) * drop + 0.03 * math.sin(math.pi * min(1.0, u / 0.5))
+    return y0 + (y1 - y0) * fwd, z, u
+
+
+def _stairs(p, down):
+    y, z, hop = stairs_path(p, down)
+    if hop is None:
+        rots, dz = AN.idle((p * 4) % 1.0)
+        rots = merge(rots, {"upperleg.l": [(X, -8)], "upperleg.r": [(X, -8)], "lowerleg.l": [(X, 14)], "lowerleg.r": [(X, 14)],
+                            "foot.l": [(X, -6)], "foot.r": [(X, -6)], "head": [(X, 8 if down else -8)]})
+    else:
+        rots, dz, _ = _gait_pose("hop", 0.0, hop)
+        swing = math.sin(math.pi * hop)                  # arms swing back and out: clear of the step ahead
+        rots = merge(rots, {"upperarm.l": [(X, 60 + 25 * swing), (Y, -25)], "upperarm.r": [(X, 60 + 25 * swing), (Y, 25)],
+                            "lowerarm.l": [(X, 20)], "lowerarm.r": [(X, 20)],
+                            "upperleg.l": [(Y, -12 * swing)], "upperleg.r": [(Y, 12 * swing)]})   # knees apart: the
+                                                                                       # tucked feet beside the belly
+    # each clip has its own spot facing the way it goes (up: at the bottom facing +Y; down: at the top facing -Y),
+    # so the body only travels straight ahead: d metres forward (the rig's forward is its own -Y)
+    if down:                                             # the steps behind are higher: the tail up, clear of them,
+        up = {**rots, **{n: [("AIM", v)] for n, v in STAIR_TAIL.items()}}
+        up = merge(up, {"spine": [(X, 24)], "head": [(X, -14)]})   # and leaning on, the head clear of the tail
+        t = p * STAIRS_DOWN_T                            # raised on the first hop (still on the top floor), lowered
+        w = smooth(min(1.0, max(0.0, (t - REST_T) / HOP_T)))   # once off the stairs, on the last stop
+        w *= 1.0 - smooth(min(1.0, max(0.0, (t - (STAIRS_DOWN_T - REST_T - HOP_T * 0.5)) / (REST_T + HOP_T * 0.5))))
+        rots = ("BLEND", rots, up, w) if w < 0.999 else up
+    d = (y - STAIR_STOPS[0][0]) if not down else (STAIR_STOPS[-1][0] - y)
+    floor = z - (STAIR_STOPS[-1][1] if down else 0.0)    # from the spot's own floor (down: the floor above)
+    return rots, dz, "legs", {}, (0.0, -d, 0.0, floor)
+
+
+def climb_stairs_up(p):
+    """Hopping up kit_stairs_stone: from the floor in front, a hop onto each step (a breath on each), and a last hop
+    onto the floor above. One way: it ends where it stops, the game moves the raccoon on from there."""
+    return _stairs(p, False)
+
+
+def climb_stairs_down(p):
+    """The same stairs going down: from the floor above, a hop down each step to the floor in front."""
+    return _stairs(p, True)
+
+
+# ---------------------------------------------------------------- the chicken ladder: scramble up, back down
+# kit_ladder_wood (build_kit_climbs.py): a cleated plank from the floor at the front of the cell up to a plank deck
+# laid on the back wall's top. Building coordinates of the piece; the climber's spots face +Y (up the plank).
+LAD_FOOT, LAD_TOP = V((0.0, *KB.LAD_FOOT)), V((0.0, *KB.LAD_TOP))  # the plank's walking surface, bottom and top edge
+LAD_DIR = (LAD_TOP - LAD_FOOT).normalized()
+LAD_N = V((0.0, -LAD_DIR.z, LAD_DIR.y))                            # out of the plank, toward the climber
+LAD_LEN = (LAD_TOP - LAD_FOOT).length
+LAD_PITCH = math.degrees(math.atan2(LAD_DIR.y, LAD_DIR.z))         # the body leans this far forward on the plank
+DECK_Z = KB.DECK_Z                                                 # the top deck's surface
+LAD_STRIDE = KB.LAD_STRIDE                                         # a cleat every stride: a foot fits between
+LAD_HIPS_OUT = 0.104                                               # the hips' distance off the plank while scrambling
+# the belly is deeper than the legs are long: the legs keep (almost) their standing pose against the body, and the
+# toes reach forward to the plank, resting just above a cleat
+LAD_ANKLE = (0.022, -0.047)                                        # an ankle from the hips: (forward, up) in the body
+LAD_TOE = 10                                                       # the feet point at the plank, toes this far down
+STAND_ANKLE = 0.0458                                               # an ankle's height over a floor, standing
+LAD_SPOT_UP = V((0.0, -0.52, 0.0015))                                  # standing at the foot (climb up starts here)
+LAD_SPOT_DOWN = V((0.0, 0.3, DECK_Z + 0.0015))                              # standing on the deck (climb down starts here)
+HANG = V((0.148, -0.0646, 0.0565))                                 # a hanging paw's slot from the hips (rig rest, left)
+REST_H = 0.086                                                     # the hips' rest height over the feet
+
+
+def lad_p(s):
+    return LAD_FOOT + LAD_DIR * s
+
+
+def _stance(s_h):
+    """Scrambling on the plank with the hips at s_h: hips position, feet ankles (l, r) (building)."""
+    H = lad_p(s_h) + LAD_N * LAD_HIPS_OUT
+    a = H - LAD_N * LAD_ANKLE[0] + LAD_DIR * LAD_ANKLE[1]          # the body's forward is -LAD_N, its up LAD_DIR
+    feet = [a + V((sx * 0.053, 0, 0)) for sx in (-1, 1)]           # l = -x (faces +Y)
+    return H, feet
+
+
+def _paws_at(s_p):
+    return [lad_p(s_p) + LAD_N * 0.026 + V((sx * 0.07, 0, 0)) for sx in (-1, 1)]
+
+
+def _ladder_keys():
+    """The climb as key poses: (seconds, hips, tilt, feet [l, r], paws [l, r] or None = hanging, kind of move)."""
+    keys = []
+    H0 = LAD_SPOT_UP + V((0, 0, REST_H))
+    feet0 = [LAD_SPOT_UP + V((sx * 0.053, 0.009, STAND_ANKLE)) for sx in (-1, 1)]
+    s_h = 0.14                                                     # the first foothold: the toes clear the floor
+    s_p = s_h + 0.06                                               # paws between two cleats
+    keys.append((0.0, H0, 0.0, feet0, None, "stand"))
+    keys.append((0.45, H0 + V((0, 0.025, 0.0)), 18.0, feet0, _paws_at(s_p), "reach"))   # lean, paws on the plank
+    H, feet = _stance(s_h)
+    keys.append((0.45, H, LAD_PITCH, feet, _paws_at(s_p), "hop"))  # hop the feet up onto the plank
+    while s_h + LAD_STRIDE < LAD_LEN - 0.07:                        # up to the top: the shoulders over the deck
+        s_p += LAD_STRIDE
+        keys.append((0.26, H, LAD_PITCH, feet, _paws_at(s_p), "reach"))
+        s_h += LAD_STRIDE
+        H, feet = _stance(s_h)
+        keys.append((0.32, H, LAD_PITCH, feet, _paws_at(s_p), "pull"))
+    deck_paws = [V((sx * 0.07, LAD_TOP.y + 0.035, DECK_Z + 0.026)) for sx in (-1, 1)]
+    keys.append((0.3, H, LAD_PITCH, feet, deck_paws, "reach"))    # paws over the top onto the deck
+    Hs = LAD_SPOT_DOWN + V((0, 0, REST_H))
+    feet_s = [LAD_SPOT_DOWN + V((sx * 0.053, 0.009, STAND_ANKLE)) for sx in (-1, 1)]
+    keys.append((0.55, Hs, 0.0, feet_s, None, "vault"))            # pull up and hop onto the deck, over its edge
+    keys.append((0.35, Hs, 0.0, feet_s, None, "stand"))
+    return keys
+
+
+LAD_KEYS = _ladder_keys()
+LAD_T = sum(k[0] for k in LAD_KEYS)
+LAD_FRAMES = int(round(LAD_T * 24 / 4)) * 4
+
+
+def _hang(H, pitch):
+    """Where a hanging paw is, for hips at H tilted `pitch` (building, left and right)."""
+    R = Quaternion(V((1, 0, 0)), math.radians(-pitch))            # building: faces +Y, so a forward lean turns about -X
+    out = []
+    for sx in (-1, 1):                                             # rig left = building -x
+        rel = V((sx * HANG.x, -HANG.y, HANG.z))
+        out.append(H + R @ rel)
+    return out
+
+
+def _ladder_state(t):
+    """Interpolated (hips, tilt, feet, paws, kind, u) at time t of the climb up."""
+    acc = 0.0
+    prev = LAD_KEYS[0]
+    for key in LAD_KEYS[1:]:
+        dt = key[0]
+        if t <= acc + dt or key is LAD_KEYS[-1]:
+            u = 0.0 if dt == 0 else min(1.0, max(0.0, (t - acc) / dt))
+            return prev, key, u
+        acc += dt
+        prev = key
+    return prev, LAD_KEYS[-1], 1.0
+
+
+def ladder_up_frame(p):
+    """Building-space targets at phase p of the climb up: hips, tilt, feet [l, r], paws [l, r], move kind, u."""
+    a, b, u = _ladder_state(p * LAD_T)
+    w = smooth(u)
+    kind = b[5]
+    H = a[1].lerp(b[1], w)
+    if kind == "vault":                                            # an arc: the belly clears the deck's edge
+        H = H + V((0, 0, 0.13 * math.sin(math.pi * u)))
+    pitch = a[2] + (b[2] - a[2]) * w
+    feet = []
+    Ra, Rb, R = (Quaternion(V((1, 0, 0)), math.radians(-t)) for t in (a[2], b[2], pitch))
+    for fa, fb in zip(a[3], b[3]):
+        if fa == fb:                                               # planted: stays put
+            f = fa.copy()
+        else:                                                      # moving: with the body (it tilts as they go)
+            wf = smooth(max(0.0, (u - 0.4) / 0.6)) if kind == "vault" else w   # vault: the body goes up, then the feet
+            f = H + R @ (Ra.inverted() @ (fa - a[1])).lerp(Rb.inverted() @ (fb - b[1]), wf)
+            f.z = max(f.z, LAD_SPOT_UP.z + STAND_ANKLE)               # never down through the floor as it tilts
+        if kind == "pull" and fa != fb:                            # the feet hop off the plank as the paws pull
+            f = f + LAD_N * (0.012 * math.sin(math.pi * u))
+        feet.append(f)
+    pa = a[4] if a[4] is not None else _hang(a[1], a[2])
+    pb = b[4] if b[4] is not None else _hang(b[1], b[2])
+    paws = []
+    for qa, qb in zip(pa, pb):
+        if (a[4] is None) != (b[4] is None):                       # to / from hanging: move with the body
+            q = H + R @ (Ra.inverted() @ (qa - a[1])).lerp(Rb.inverted() @ (qb - b[1]), w)
+        else:
+            q = qa.lerp(qb, w)
+        if kind == "reach" and qa != qb:                           # a paw lifts off as it reaches
+            up = V((0, 0, 0.05)) if qb.z >= DECK_Z else LAD_N * 0.035                # over the cleat / the deck's edge
+            q = q + up * min(1.0, 2.0 * math.sin(math.pi * u))
+        paws.append(q)
+    return H, pitch, feet, paws, kind, u
+
+
+def _b2r(v, spot, point=True):
+    """Building -> the clip's own space for a spot facing +Y at `spot` (rig forward is its -Y, its left is +X)."""
+    d = v - spot if point else v
+    return V((-d.x, -d.y, d.z))
+
+
+def _ladder_clip(p, down):
+    H, pitch, feet, paws, kind, u = ladder_up_frame(1.0 - p if down else p)
+    spot = LAD_SPOT_DOWN if down else LAD_SPOT_UP
+    rots = act({
+        "spine": [(X, 4)], "head": [(X, -12 - 1.4 * pitch)],      # looks up the plank (the snout clears it)
+        "ear.l": [(Y, 24)], "ear.r": [(Y, -24)],
+        "tail_1": [(X, -10)],
+    }, tail_sway(p * 6 % 1.0, 6, 1))
+    toe = _b2r(-LAD_N * math.cos(math.radians(LAD_TOE)) - LAD_DIR * math.sin(math.radians(LAD_TOE)), spot, point=False)
+    flat = _b2r(V((0, 1, -0.27)).normalized(), spot, point=False)
+    feet_t = {}
+    for side, f in zip("lr", feet):                                # a foot on a floor stands flat; off it, it turns
+        lvl = (DECK_Z + 0.0015 if f.y > LAD_TOP.y else LAD_SPOT_UP.z) + STAND_ANKLE   # to point at the plank
+        t = min(1.0, max(0.0, (f.z - lvl) / 0.04))
+        kpole = _b2r(-LAD_N, spot, point=False).lerp(FWD, 1 - t)   # knees toward the plank, not up into the belly
+        feet_t[side] = (_b2r(f, spot), kpole, flat.lerp(toe, t).normalized())
+    out_r, out_l = -LEFT - _b2r(LAD_DIR, spot, point=False) * 0.4, LEFT - _b2r(LAD_DIR, spot, point=False) * 0.4
+    arms = {"l": (_b2r(paws[0], spot), None, out_l), "r": (_b2r(paws[1], spot), None, out_r)}
+    h = _b2r(H, spot)
+    ground = DECK_Z if H.y > LAD_TOP.y else 0.0                    # the tail rests on the floor / the deck, never through
+    return rots, 0.0, "free", arms, (h.x, h.y, 0.0, h.z - REST_H, pitch, ground - spot.z), feet_t
+
+
+def climb_ladder_up(p):
+    """Scrambling up the chicken ladder (kit_ladder_wood): lean onto the plank, hop the feet up onto it, then reach
+    up a cleat with both paws and pull up (the feet tuck and land under the hips) over and over; at the top, paws
+    over onto the deck, pull up and stand. One way: ends standing on the deck (LAD_SPOT_DOWN)."""
+    return _ladder_clip(p, False)
+
+
+def climb_ladder_down(p):
+    """The climb up played backwards, from the deck: backing down the plank, facing it, as you go down a ladder."""
+    return _ladder_clip(p, True)
+
+
 KIT = False          # set while baking the kit (its own proportions: see rummage)
 
 JOBS = {   # clip: (fn, frames, tool)
@@ -1033,6 +1331,10 @@ JOBS = {   # clip: (fn, frames, tool)
     "work_picklock": (picklock, 48, "prop_lockpick"),
     "work_lift": (lift, 48, None),
     "work_spar": (spar, 48, "prop_stick"),
+    "climb_stairs_up": (climb_stairs_up, STAIRS_FRAMES, None),
+    "climb_stairs_down": (climb_stairs_down, STAIRS_DOWN_FRAMES, None),
+    "climb_ladder_up": (climb_ladder_up, LAD_FRAMES, None),
+    "climb_ladder_down": (climb_ladder_down, LAD_FRAMES, None),
 }
 JOB_RIG = {"work_teach": "chr_raccoon_elder", "work_listen": "chr_raccoon_kit", "work_swing": "chr_raccoon_kit"}   # everything else: the adult
 
@@ -1151,14 +1453,19 @@ def bake_job(rig, ob, name, k, report=None):
     lift_ax = (t1.tail_local - t1.head_local).normalized().cross(V((0, 0, 1))).normalized()
 
     hips_inv = hips.matrix_local.to_3x3().inverted()
-    travel = [V(), 0.0]                                    # a clip that travels: the hips' offset and heading this frame
+    travel = [V(), 0.0, 0.0]                               # a clip that travels: the hips' offset, heading, forward tilt
     hm = hips.matrix_local.to_3x3().normalized()
 
     def pose(rots, z):
+        yq = None
+        if travel[1] or travel[2]:                          # heading and tilt turn the whole posed body as one, about
+            yq = Quaternion(V((0, 0, 1)), math.radians(travel[1])) @ Quaternion(V((1, 0, 0)), math.radians(travel[2]))
+            Ri = yq.to_matrix().inverted()                  # aims (IK) are where they end up: aim before the turn
+            rots = {n: [("AIM", tuple(Ri @ V(e[1]))) if e[0] == "AIM" else ("MAT", Ri @ e[1]) if e[0] == "MAT" else e
+                        for e in lst] for n, lst in rots.items()}
         qs = pose_quats(rig, rots)
-        if travel[1]:                                       # the heading turns the whole posed body as one, about the
-            yq = Quaternion(V((0, 0, 1)), math.radians(travel[1]))          # vertical: the root's rotation only
-            qs["hips"] = (hm.inverted() @ yq.to_matrix() @ hm).to_quaternion() @ qs["hips"]
+        if yq is not None:
+            qs["hips"] = (hm.inverted() @ yq.to_matrix() @ hm).to_quaternion() @ qs["hips"]   # the hips: the root only
         for pb in rig.pose.bones:
             pb.rotation_mode = "QUATERNION"
             pb.rotation_quaternion = qs[pb.name]
@@ -1173,22 +1480,40 @@ def bake_job(rig, ob, name, k, report=None):
         rots, dz, support, arms = out[:4]
         floor = 0.0
         if len(out) > 4:                                    # a travelling clip: where it is, its heading, the floor
-            tx, ty, yaw, floor = out[4]
+            tx, ty, yaw, floor = out[4][:4]                 # ("free" support: floor = the hips' own height offset)
             travel[0] = V((tx, ty, 0)) * ratio
             travel[1] = yaw
+            travel[2] = out[4][4] if len(out[4]) > 4 else 0.0
             floor *= ratio
+        feet = out[5] if len(out) > 5 else {}
         if isinstance(rots, tuple):                         # a change of gait: resolve the blend to plain rotations
             rots = {n: [("LOCALQ", q)] for n, q in blend_quats(rig, rots[1], rots[2], rots[3]).items()}
         z = dz * k
         pose(rots, z)
-        z -= AN._lowest(ob, legs if support == "legs" else seat) - floor
+        if support == "free":                               # the clip places the hips itself (climbing)
+            z = floor
+        else:
+            z -= AN._lowest(ob, legs if support == "legs" else seat) - floor
         pose(rots, z)
-        if tail and AN._lowest(ob, tail) < -0.001:
+        if feet:                                            # feet on given spots (a ladder's plank): leg IK
+            lr = {}
+            for side, (ankle, kpole, toe) in feet.items():
+                r_, miss = leg_rots(rig, side, ankle * ratio, kpole, toe)
+                lr.update(r_)
+                if report is not None and miss > 0.002:
+                    report.setdefault(name + "_feet", []).append((f, side, round(miss, 4)))
+            rots = merge(rots, lr)
+            pose(rots, z)
+        ground = min(floor, 0.0)                            # the tail lies on the ground, not through it (going
+                                                            # down stairs: the step it stands on)
+        if support == "free":                               # climbing: the clip says where the ground is (or none)
+            ground = out[4][5] * ratio if len(out[4]) > 5 and out[4][5] is not None else None
+        if tail and ground is not None and AN._lowest(ob, tail) < ground - 0.001:
             lo, hi = 0.0, 70.0
             for _ in range(7):
                 mid = (lo + hi) / 2
                 pose(merge(rots, {"tail_1": [(tuple(lift_ax), mid)]}), z)
-                lo, hi = (lo, mid) if AN._lowest(ob, tail) >= -0.001 else (mid, hi)
+                lo, hi = (lo, mid) if AN._lowest(ob, tail) >= ground - 0.001 else (mid, hi)
             rots = merge(rots, {"tail_1": [(tuple(lift_ax), hi)]})
             pose(rots, z)
         push = {side: pushes[side] * 0.6 for side in arms}   # last frame's push, relaxed: lets the paw drift back

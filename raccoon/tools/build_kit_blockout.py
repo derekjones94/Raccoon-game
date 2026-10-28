@@ -242,18 +242,61 @@ def kit_scaffold_wood(coll, rnd):
     return m.obj("kit_scaffold_wood", coll)
 
 
+# the chicken ladder: a cleated plank a raccoon scrambles up on all fours (its rung spacing would beat any
+# raccoon on a rung ladder). build_raccoon_jobs' climb_ladder_up / _down are made on these numbers.
+LAD_FOOT, LAD_TOP = (-0.42, 0.0), (0.14, 1.0)   # (y, z) of the plank's walking surface: bottom and top edge
+LAD_W, LAD_THICK = 0.26, 0.025
+LAD_CLEAT0, LAD_STRIDE = 0.14, 0.1              # cleats: the first one's distance up the plank, then every stride
+                                                # (the climber's toes rest above one, its paws grip between two)
+CLEAT_H, CLEAT_D = 0.012, 0.018                 # a cleat stands this high off the plank, this deep along it
+DECK_Z, DECK_Y = 1.012, (0.15, 0.475)           # the top deck: laid on the wall's capstones, its walking surface
+                                                # (it starts just behind the plank's top: nothing sticks out over it)
+
+
 def kit_ladder_wood(coll, rnd):
-    """Leans against the back edge (where a wall would be): foot at the front, top at z 1.0."""
+    """A chicken ladder: a cleated plank from the front of the cell up to a short deck laid across the top of a back
+    wall (the deck's battens hang down both wall faces and hold it on)."""
     m = Mesh()
-    yb, yt = 0.05, WY0 - 0.03            # foot / top of the rails (top rests against a back wall)
-    for x in (-0.17, 0.17):
-        m.beam((x, yb, 0.0), (x, yt, 1.0), 0.045, "wood_mid")
-    for k in range(1, 7):
-        t = k / 7
-        y, z = yb + (yt - yb) * t, t
-        m.beam((-0.2, y - 0.01, z), (0.2, y - 0.01, z), 0.03, "wood_light")
-        for x in (-0.17, 0.17):
-            m.box((x - 0.03, y - 0.04, z - 0.02), (x + 0.03, y + 0.02, z + 0.02), "rope")
+    fy, fz = LAD_FOOT
+    ty, tz = LAD_TOP
+    d = Vector((0, ty - fy, tz - fz))
+    L = d.length
+    d.normalize()
+    n = Vector((0, -d.z, d.y))                  # out of the walking surface, toward the climber
+    hw = LAD_W / 2
+
+    def slab(pts_yz, x0, x1, swatch):
+        """A prism: a (y, z) outline (any winding) extruded from x0 to x1."""
+        a = [m.bm.verts.new((x0, y, z)) for y, z in pts_yz]
+        b = [m.bm.verts.new((x1, y, z)) for y, z in pts_yz]
+        fs = [m.bm.faces.new(a), m.bm.faces.new(list(reversed(b)))]
+        for i in range(len(a)):
+            j = (i + 1) % len(a)
+            fs.append(m.bm.faces.new((a[i], a[j], b[j], b[i])))
+        m.tag(fs, swatch)
+
+    def on(s, off):
+        p = Vector((0, fy, fz)) + d * s + n * off
+        return (p.y, p.z)
+    # the plank: the walking surface from foot to top; its underside cut level at the floor, its top end cut plumb
+    # against the deck's battens
+    bot_back = (fy + LAD_THICK * n.z / d.z * d.y - LAD_THICK * n.y, 0.0)
+    slab([(fy, fz), (ty, tz), (ty, tz - LAD_THICK / d.y), bot_back], -hw, hw, "wood_mid")
+    # cleats: thin battens across the plank, every stride
+    s = LAD_CLEAT0
+    while s < L - 0.1:
+        c0, c1 = on(s - CLEAT_D / 2, 0.0), on(s + CLEAT_D / 2, 0.0)
+        c2, c3 = on(s + CLEAT_D / 2, CLEAT_H), on(s - CLEAT_D / 2, CLEAT_H)
+        slab([c0, c1, c2, c3], -hw + 0.012, hw - 0.012, "wood_light")
+        s += LAD_STRIDE
+    # two rails along the plank's edges, nailed on (keep feet and paws on the planking)
+    for x in (-hw, hw - 0.014):
+        slab([on(0.02, 0.0), on(L - 0.01, 0.0), on(L - 0.01, 0.016), on(0.02, 0.016)], x, x + 0.014, "wood_dark")
+    # the deck on the wall top, and its battens down the wall's inner and outer faces
+    m.box((-hw - 0.02, DECK_Y[0], DECK_Z - 0.012), (hw + 0.02, DECK_Y[1], DECK_Z), "wood_mid", top="wood_light")
+    for y0, y1 in ((LAD_TOP[0], WY0 - 0.008), (WY1, DECK_Y[1])):          # the plank's top end rests on the inner pair
+        for x in (-hw + 0.01, hw - 0.04):
+            m.box((x, y0, 0.93), (x + 0.03, y1, DECK_Z - 0.012), "wood_dark")
     return m.obj("kit_ladder_wood", coll)
 
 

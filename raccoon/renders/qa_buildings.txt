@@ -72,8 +72,16 @@
 
 == bld_dice_table_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_shadow_course_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_practice_yard_3x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_sparring_ring_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== kit_stairs_stone + climb_stairs_up: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== kit_stairs_stone + climb_stairs_down: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== kit_ladder_wood + climb_ladder_up: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== kit_ladder_wood + climb_ladder_down: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_shadow_course_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

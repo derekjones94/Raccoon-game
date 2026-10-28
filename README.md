@@ -36,7 +36,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 | `bld_practice_yard_3x2`, `bld_shadow_course_2x2`, `bld_sparring_ring_2x2` | Animated buildings, batch 6 (training). The shadow course's `work_course` clip travels a whole lap (see `INTEGRATION.md`). |
 | `bld_guild_hall_3x3` | Guild hall: hollow timber hall with a lived-in interior. Its roof is a child node, `bld_guild_hall_3x3_roof`: hide it to look inside, like the den's. `spot_gather_1` to `_4` round the war table. |
 | `bld_den_2x2` | Raccoon family den: hollow stone hut with three beds, a stove, a table and a shelf inside, plus a doorway and three windows. Its roof is a child node, `bld_den_2x2_roof`: hide it to look inside (for example when the camera is close or a raccoon is home). It has `idle` and `work` (someone asleep) clips and `spot_sleep_1` to `_3` markers. |
-| `kit_floor_stone`, `kit_wall_stone`, `kit_wall_stone_corner`, `kit_wall_stone_door`, `kit_ramp_stone`, `kit_stairs_stone`, `kit_scaffold_wood`, `kit_ladder_wood` | Tunnel kit pieces |
+| `kit_floor_stone`, `kit_wall_stone`, `kit_wall_stone_corner`, `kit_wall_stone_door`, `kit_ramp_stone`, `kit_stairs_stone`, `kit_scaffold_wood`, `kit_ladder_wood` | Tunnel kit pieces. `kit_ladder_wood` is a chicken ladder (cleated plank and a deck on the wall top); the stairs and the ladder have one-way climbing clips (`climb_*`, see `INTEGRATION.md`) |
 | `prop_barrel`, `prop_crate`, `prop_gemchest`, `prop_goldpile`, `prop_mushrooms`, `prop_torch` | Props |
 
 ## Characters

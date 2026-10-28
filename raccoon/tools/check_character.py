@@ -150,9 +150,14 @@ for act in CLIPS:
     for f in range(0, frames + 1, 2):
         ev, me = deformed(act, f)
         tree = shells(me, TARGETS)
+        ground = 0.0                                    # a clip that climbs: the floor it is on at this frame
+        if act in J.JOBS:
+            out = J.JOBS[act][0]((f / frames) % 1.0)
+            if len(out) > 4:
+                ground = out[4][5] if len(out[4]) > 5 else (out[4][3] if out[2] != "free" else 0.0)
         for v in me.vertices:
             part = vgroup.get(v.index)
-            low[part] = min(low.get(part, 1.0), v.co.z)
+            low[part] = min(low.get(part, 1.0), v.co.z - ground)
             if part not in MOVERS or v.index in buried:
                 continue
             dist = depth_inside(tree, v.co)

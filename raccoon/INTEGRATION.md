@@ -162,7 +162,7 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Patio bar:** up to five raccoons at once, sitting on rugs round the fire pit (`spot_seat_1` to `_5`). Seated raccoons sit on the floor with their legs out in front, so the seats are on the ground, not on stools. Adults only for now (see section 6).
 - **Infirmary:** patients sit propped up and doze on the cots with the base `sleep` clip. Each cot is sized for the whole sleeping raccoon, tail included, like the den's beds.
 - **Guild hall:** the roof is the child node **`bld_guild_hall_3x3_roof`**, with a ceiling under it. Hide it to look inside, as with the den. The chimney smoke is the roof's child, so it hides with it. The walls stop at 0.52 m so the inside reads from the game camera.
-- **Guard post:** the guard's spot is up on the watch platform, 0.34 m above the ground, and the raccoon reaches it by the ladder at the back. There's no climbing clip yet (the tracker lists `kit_ladder`'s climb for batch 6), so for now move the raccoon straight onto the spot, or fade it out at the ladder's foot and in at the top.
+- **Guard post:** the guard's spot is up on the watch platform, 0.34 m above the ground, and the raccoon reaches it by the ladder at the back. The climbing clips are made for the tunnel kit's pieces (`kit_ladder_wood`, `kit_stairs_stone`, see Batch 6), not this short ladder, so here move the raccoon straight onto the spot, or fade it out at the ladder's foot and in at the top.
 - **Alarm bell:** the frame stands across the lot's diagonal, and the ringer faces the bell along it. That way the game camera sees the ringer side-on, with the rope running in at a slant from the lever above the bell. In `idle` the rope hangs straight down; in `work` it runs to the ringer's paws. It snaps between the two when the clip switches, like the cold cellar's door.
 - **Graveyard:** a gardener tends the fresh grave (`work_tend`, the cave garden's clip), and up to two mourners stand at the foot of graves with their heads bowed (`work_mourn`). About 3,900 triangles: a 3×3 lot with a wall all round.
 - **Haulers' lodge:** off-shift haulers sleep on the two bunks in the shed. The loader packs the dray with `work_stash`, the stockpile's clip.
@@ -192,9 +192,27 @@ If you can't keep them in sync, the buildings still look right on their own. You
 - **Sparring ring:** both fighters play `work_spar`; start the second one 24 frames after the first. One thrusts while the other blocks, so the padded sticks meet and the raccoons never touch.
 - **Practice yard:** the picked padlock springs open on the lock-pick clip's cue, and the purse follows the thief's paw, so start each raccoon's clip with the building's `work` (all 48 frames).
 
+### Batch 6: climbing (`kit_ladder_wood`, `kit_stairs_stone`)
+
+`kit_ladder_wood` is now a chicken ladder: a cleated plank from the front of its cell up to a short deck on top of a back wall (place it in front of a `kit_wall_stone`, same cell and rotation; the deck sits on the wall's capstones). `kit_stairs_stone` is unchanged. Each piece has two spots and two **one-way, travelling** clips (adults only):
+
+| Piece | Clip | Starts at | Ends at | Frames |
+|---|---|---|---|---|
+| `kit_stairs_stone` | `climb_stairs_up` | `spot_stairs_up`, on the floor in front, facing up | `spot_stairs_down`'s position, still facing up | 104 |
+| `kit_stairs_stone` | `climb_stairs_down` | `spot_stairs_down`, on the top floor, facing down | `spot_stairs_off`, 0.3 m past `spot_stairs_up` (a last hop: its tail clear of the bottom step), facing away from the stairs | 120 |
+| `kit_ladder_wood` | `climb_ladder_up` | `spot_ladder_up`, on the floor at the plank's foot, facing it | `spot_ladder_down`, on the deck | 176 |
+| `kit_ladder_wood` | `climb_ladder_down` | `spot_ladder_down`, on the deck, back to the plank | `spot_ladder_up` | 176 |
+
+Both ladder spots face the same way (up the plank, toward the wall): going down, the raccoon backs down the plank facing it, as you go down a ladder. Going down the stairs, the raccoon leans forward and carries its tail up, clear of the steps behind it, and lowers it again on the floor at the end.
+
+- Put the raccoon on the start spot, facing the spot's way, and play the clip once from frame 0. **Don't loop it** and don't move the raccoon's node while it plays: the clip carries the body (its hips bone moves, and leans on the ladder).
+- On the last frame the body stands at the end spot. Then, in the same frame, move the raccoon's node to the end spot's position (keep its heading: every clip ends facing the way it started) and switch to `idle` or `walk`. Its pose on the last frame is the standing rest pose, so nothing jumps.
+- One climber at a time on a piece; two would pass through each other.
+- Checked frame by frame on the piece with its wall and floors: no clipping; the paws only touch the plank and the deck.
+
 ## 6. Who does which job
 
-- **Adults** (`chr_raccoon`) have twenty-three job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`, `work_picklock`, `work_lift`, `work_spar`, `work_course`.
+- **Adults** (`chr_raccoon`) have twenty-three job clips: `work_chop`, `work_fish`, `work_scrub`, `work_rummage`, `work_water`, `work_tend`, `work_stash`, `work_pump`, `work_stir`, `work_hammer`, `work_haggle`, `work_drink`, `work_chat`, `work_grind`, `work_read`, `work_guard`, `work_ring`, `work_mourn`, `work_sweep`, `work_picklock`, `work_lift`, `work_spar`, `work_course`; and four climbing clips: `climb_stairs_up`, `climb_stairs_down`, `climb_ladder_up`, `climb_ladder_down`. Kits and the elder have no climbing clips yet: move them between levels without one, or keep them on one level.
 - **Kits** (`chr_raccoon_kit`) have two: `work_listen` (training nook) and `work_swing` (kit swing). The work buildings' contact points (log height, water depth, heap face) are set for the adult's size, so a kit would chop and wash in mid-air, and it shouldn't swing an axe anyway.
 - **The elder** (`chr_raccoon_elder`) has one: `work_teach` (training nook), leaning on his cane with his right paw and teaching with his left.
 

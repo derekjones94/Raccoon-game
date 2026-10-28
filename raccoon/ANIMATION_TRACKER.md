@@ -89,15 +89,15 @@ Also new in batch 5:
 - **Job clips** on `chr_raccoon` (adults only): `work_guard`, `work_ring`, `work_mourn`, `work_sweep`. All earlier clips are unchanged.
 - **Guard post:** the guard's spot is raised, on the platform. Until there's a climbing clip, the game moves the raccoon straight onto it (see `INTEGRATION.md`).
 
-## Batch 6: training and the kit pieces. Buildings done; the ladder climb is next
+## Batch 6: training and the kit pieces. Done, waiting for sign-off
 
 | Model | Model work | `idle` | `work` | Raccoon clip / tool | Spots | QA | Signed off |
 |---|---|---|---|---|---|---|---|
 | `bld_practice_yard_3x2` | ✅ rebuilt to fit: a sanded yard with a low fence, a lock board of practice padlocks, a straw dummy in a coat with a purse on its belt, straw bales, a basket of purses, a score board, bunting | ✅ bunting and the coat-tail stir, the locks rock | ✅ the picked padlock springs open and is snapped shut; the purse follows the thief's paw | `work_picklock` + `prop_lockpick` (new); `work_lift` (new): lifts the purse off and hangs it back | `spot_pick`, `spot_lift` (side-on) | ✅ clean, both at work | ⬜ |
 | `bld_shadow_course_2x2` | ✅ rebuilt to fit: a lap round a dark yard: a bell rope to sneak under, a balance plank on stumps, a sentry lantern, a hurdle, a cardboard weasel guard on a pivot, chalk marks, a start flag | ✅ bells and lantern sway, the weasel scans | ✅ the weasel turns its back while each runner sneaks past, the bells jingle as they pass | `work_course` (new, **travels**): a whole lap: dash, sneak under the bells, hop up and balance along the plank, hop down, sneak past the lantern, hop the hurdle, back to the flag | `spot_course` (two runners, half a lap apart) | ✅ clean, two runners | ⬜ |
 | `bld_sparring_ring_2x2` | ✅ rebuilt to fit: a roped ring of sand on four posts, a bench, a rack of practice sticks, a dented shield, a water bucket | ✅ the shield wobbles, the ropes sway | ✅ dust puffs at each lunge, the ropes shake | `work_spar` + `prop_stick` (new): thrust then block; both fighters play it, half a loop apart, so one thrusts while the other blocks | `spot_spar_1`, `_2` | ✅ clean, the two never touch | ⬜ |
-| `kit_ladder` | ours | — | — still | — | climb (`walk` for now) | ⬜ | ⬜ |
-| `kit_stairs` | ours | — | — still | — | — | ⬜ | ⬜ |
+| `kit_ladder_wood` | ✅ rebuilt as a chicken ladder: a cleated plank with edge rails, up to a short deck laid across the wall top (its battens hang down both wall faces). A rung ladder can't work for a raccoon this shape: its rungs are further apart than its arms and legs reach | — still | — still | `climb_ladder_up` (new, **travels**): lean onto the plank, hop the feet up, scramble up a cleat at a time, paws gripping between the cleats and the legs tucked under (the belly is deeper than the legs are long), paws over onto the deck, vault up and stand. `climb_ladder_down`: the same backwards | `spot_ladder_up` (at the foot), `spot_ladder_down` (on the deck); both face up the plank | ✅ clean, both clips | ⬜ |
+| `kit_stairs_stone` | ours, unchanged | — still | — still | `climb_stairs_up` / `climb_stairs_down` (new, **travel**): a two-footed hop per step, a breath between, arms swinging back; going down it leans on and carries its tail up over the steps behind | `spot_stairs_up` (in front, facing up), `spot_stairs_down` (on top, facing down), `spot_stairs_off` (where going down ends) | ✅ clean, both clips | ⬜ |
 
 ## Decorations (requested 2026-10-27)
 
