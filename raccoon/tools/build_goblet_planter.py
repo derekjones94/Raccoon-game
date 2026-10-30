@@ -58,12 +58,13 @@ def frond(m, base, ang, length, lift, rnd):
 def build(coll, rnd):
     m = B.M()
     # ---- plinth and the scatter round it
+    m.obox(V((0, 0, 0.002)), (0.94, 0.94, 0.004), "moss")                                         # grass
     m.cyl(V((0, 0, PLINTH / 2)), 0.22, PLINTH, "stone_mid", segs=8, cap="stone_light")
     m.cyl(V((0, 0, 0.006)), 0.25, 0.012, "stone_dark", segs=8)
     for k, (x, y) in enumerate(((-0.3, -0.18), (-0.26, -0.24), (0.28, -0.26), (0.31, 0.2), (-0.12, -0.33))):
-        m.cyl(V((x, y, 0.004 + 0.004 * (k == 1))), 0.022, 0.006, "gold", segs=8, cap="gold_light")
-    m.beam(V((0.18, -0.3, 0.006)), V((0.3, -0.36, 0.006)), 0.006, "silver")                       # a spoon
-    m.blob(V((0.33, -0.375, 0.008)), V((0.022, 0.016, 0.006)), "silver", 6, 3)
+        m.cyl(V((x, y, 0.0072 + 0.0062 * (k == 1))), 0.022, 0.006, "gold", segs=8, cap="gold_light")
+    m.beam(V((0.18, -0.3, 0.0072)), V((0.3, -0.36, 0.0072)), 0.006, "silver")                     # a spoon
+    m.blob(V((0.33, -0.375, 0.0092)), V((0.022, 0.016, 0.005)), "silver", 8, 3)
     # ---- the goblet: foot, stem with a knop, a tall bowl flaring to the rim
     m.cyl(V((0, 0, PLINTH + 0.012)), 0.12, 0.024, "silver", segs=12, r2=0.09)
     m.cyl(V((0, 0, PLINTH + 0.032)), 0.06, 0.016, "pewter", segs=10, r2=0.03)
@@ -85,9 +86,15 @@ def build(coll, rnd):
     p0 = V((CUP_R * math.cos(a), CUP_R * math.sin(a), CUP_Z))
     pts = [p0, p0 + V((0.03 * math.cos(a), 0.03 * math.sin(a), -0.06)), p0 + V((0.025 * math.cos(a), 0.02 * math.sin(a), -0.16)),
            p0 + V((0.0, -0.01, -0.22))]
+    side = 1
     for q0, q1 in zip(pts, pts[1:]):
         m.beam(q0, q1, 0.004, "moss")
-        m.blob(q1, V((0.018, 0.012, 0.014)), "moss_light", 5, 3)
+        for t in (0.3, 0.65, 1.0):                                  # leaves along the vine, alternating sides: flat
+            c = q0.lerp(q1, t)                                      # diamonds facing out, not beads
+            tang = V((-math.sin(a), math.cos(a), 0)) * side * 0.012
+            m.obox(c + tang, (0.024, 0.004, 0.024), "moss_light" if side > 0 else "moss",
+                   rot=(0, math.radians(45), a + math.pi / 2))
+            side = -side
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
     parts = {}

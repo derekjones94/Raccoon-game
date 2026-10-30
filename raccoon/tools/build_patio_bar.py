@@ -53,12 +53,20 @@ def seats():
 
 def build(coll, rnd):
     m = B.M()
+    m.obox(V((0, 0, 0.002)), (1.94, 1.94, 0.004), "moss")                       # grass round the deck (and its posts)
     # ---- deck: a disc of planks on a stone ring, flush to the ground
     n = 10
-    for k in range(n):
-        x = -0.95 + 1.9 * (k + 0.5) / n
-        half = math.sqrt(max(0.95 ** 2 - x * x, 0.04))
-        m.obox(V((x, 0, DECK / 2)), (1.9 / n - 0.01, 2 * half, DECK), "wood_light" if k % 2 else "wood_mid")
+    for k in range(n):                                       # each plank's ends cut on the circle: a clean round edge
+        xl, xr = -0.95 + 1.9 * k / n + 0.005, -0.95 + 1.9 * (k + 1) / n - 0.005
+        hl, hr = (math.sqrt(max(0.95 ** 2 - x * x, 0.04)) for x in (xl, xr))
+        outline = [(xl, -hl), (xr, -hr), (xr, hr), (xl, hl)]
+        bot = [m.bm.verts.new((x, y, 0.0)) for x, y in outline]
+        top = [m.bm.verts.new((x, y, DECK)) for x, y in outline]
+        fs = [m.bm.faces.new(top), m.bm.faces.new(list(reversed(bot)))]
+        for i in range(4):
+            j = (i + 1) % 4
+            fs.append(m.bm.faces.new((bot[i], bot[j], top[j], top[i])))
+        m.tag(fs, "wood_light" if k % 2 else "wood_mid")
     # ---- fire pit: a ring of stones, logs, coals
     for k in range(9):
         a = TAU * k / 9

@@ -99,6 +99,29 @@ Also new in batch 5:
 | `kit_ladder_wood` | ✅ rebuilt as a chicken ladder: a cleated plank with edge rails, up to a short deck laid across the wall top (its battens hang down both wall faces). A rung ladder can't work for a raccoon this shape: its rungs are further apart than its arms and legs reach | — still | — still | `climb_ladder_up` (new, **travels**): lean onto the plank, hop the feet up, scramble up a cleat at a time, paws gripping between the cleats and the legs tucked under (the belly is deeper than the legs are long), paws over onto the deck, vault up and stand. `climb_ladder_down`: the same backwards | `spot_ladder_up` (at the foot), `spot_ladder_down` (on the deck); both face up the plank | ✅ clean, both clips | ✅ |
 | `kit_stairs_stone` | ours, unchanged | — still | — still | `climb_stairs_up` / `climb_stairs_down` (new, **travel**): a two-footed hop per step, a breath between, arms swinging back; going down it leans on and carries its tail up over the steps behind | `spot_stairs_up` (in front, facing up), `spot_stairs_down` (on top, facing down), `spot_stairs_off` (where going down ends) | ✅ clean, both clips | ✅ |
 
+## Audit fixes (2026-10-30)
+
+Every building and decoration was rendered from six sides and checked; 28 oddities were found, 24 fixed (four were
+false alarms: shadows, or a camera angle). The lessons are in `ART_CHECKLIST.md`.
+
+| Model | Fixed |
+|---|---|
+| `bld_den_2x2`, `bld_guild_hall_3x3`, `bld_smelter_2x2` | chimney smoke: soft round puffs rising from the chimney mouth as one plume, not floating grey cubes. Den: grass round it |
+| `bld_brewery_2x2`, `bld_infirmary_2x2` | steam: soft puffs from the pot / the kettle's spout, not a white cube in the air |
+| `bld_coin_fountain_2x2` | water pours off each bowl's lip in pale curved arcs that glitter, not straight rods that read as legs |
+| `bld_trophy_case_1x1` | the loose white streaks inside the case are gone; sparkles wink on the brass edges and the finial |
+| `bld_trash_bin_1x1` | the flies are fat and buzz just over the heap, not specks high in the air |
+| `bld_duke_portrait_1x1`, `bld_goblet_planter_1x1`, `bld_mirror_mosaic_1x1`, `bld_woodpile_1x1` | ground under everything (a plank floor and rug; grass; a flagstone pad; grass and trodden earth); the chips, coins and bottles rest on it |
+| `bld_fishing_spot_1x2`, `bld_patio_bar_2x2` | a grassy bank / grass round the deck, so nothing stands on nothing |
+| `bld_rummage_camp_2x2` | grass under the whole camp; the lean-to's tarp runs from its beam down to pegs in the ground, so it shows from the front (it was edge-on and vanished) |
+| `bld_cold_cellar_2x2` | rebuilt as a round, tall hill with its front cut by a stone retaining wall that follows the hill's curve, the door set into it (it was a low oval mound with the doorway standing out of its back); the drying line runs from its post to the lintel |
+| `bld_alarm_bell_1x1` | the cobbles are laid in staggered rows, none on another |
+| `bld_patio_bar_2x2` | the deck's planks are cut to the circle: a clean round edge |
+| `bld_janitor_shed_2x1` | the yard's flagstones are warm grey, laid square with even joints (they read as random blue squares) |
+| `bld_practice_yard_3x2` | the straw bales are darker than the sand, with twine bands (they vanished into it) |
+| `bld_goblet_planter_1x1` | the ivy has leaves along the vine (it was beads on a thread) |
+| `bld_haulers_lodge_2x2` | the hoist's rope runs back along the jib and down to the winch, the crate hangs from a ring (it read as a gallows) |
+
 ## Decorations (requested 2026-10-27)
 
 Our own decoration models, in the batch style: an `idle` loop, plus `spot_` markers where raccoons use them. They come before batch 6, in three groups with a sign-off after each. Costs from the request are in brackets.

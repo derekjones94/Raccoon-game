@@ -293,7 +293,7 @@ def build(coll, rnd):
     for i in range(3):                                                                                   # smoke: children of the roof
         mm = B.M()
         c = V((chim.x, chim.y, RIDGE + 0.32))
-        mm.blob(c, V((0.06, 0.06, 0.05)), "stone_pale", 7, 3)
+        A.puff(mm, c, 0.05, "stone_pale")
         ob = A.part(mm.obj(f"pr_smoke_{i + 1}", coll), root, c)
         ob.parent = roof
         ob.location = c - roof.location
@@ -357,8 +357,7 @@ def clips(parts):
                                       (1, 1, (1.0 + 0.4 * crew) * (1 + 0.15 * math.sin(TAU * (5 * p + i)))))
         for i in range(1, 4):
             u = (p * 2 + i / 3) % 1.0
-            s = math.sin(math.pi * u)
-            pose[f"pr_smoke_{i}"] = (V((0.05 * u, 0.03 * math.sin(TAU * u), 0.32 * u)), None, max((0.6 + 1.0 * u) * s, 0.001))
+            pose[f"pr_smoke_{i}"] = (V((0.05 * u, 0.03 * math.sin(TAU * u), 0.32 * u)), None, A.puff_size(u))
         for i in range(1, 4):
             pose[f"pr_notice_{i}"] = (None, A.q((0, 1, 0), crew * 10 * max(0.0, math.sin(TAU * (2 * p + 0.3 * i)))), None)
         return pose

@@ -327,6 +327,7 @@ def bld_den_2x2(coll, rnd):
         mp, mout, _, _ = frame_at(45, 0.06)
         m.cyl(mp + V((dx, dy, h / 2)), 0.012, h, "cloth_cream", segs=4)
         m.cyl(mp + V((dx, dy, h)), 0.035, 0.025, "mushroom_glow", segs=5, r2=0.012)
+    m.obox(V((0, 0, 0.0015)), (1.94, 1.94, 0.003), "moss")                  # the ground round it (under the floor)
     return m.obj("bld_den_2x2", coll)
 
 
@@ -451,7 +452,7 @@ def den_parts(coll, den, roof):
     parts["pr_lantern_glow"] = A.part(m.obj("pr_lantern_glow", coll), den, lc)
     for i in range(3):
         m = DenMesh()
-        m.blob(SMOKE_FROM, V((0.03, 0.03, 0.026)), "stone_frost", 6, 3)
+        A.puff(m, SMOKE_FROM, 0.034)
         parts[f"pr_smoke_{i + 1}"] = A.part(m.obj(f"pr_smoke_{i + 1}", coll), roof, SMOKE_FROM)
     return parts
 

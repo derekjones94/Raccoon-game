@@ -81,6 +81,8 @@ def build(coll, rnd):
             continue
         m.obox(p, (0.03, 0.016, 0.006), "wood_cut", rot=(0, 0, rnd.uniform(0, 3)))
     m.blob(V((0.33, -0.33, 0.0)), V((0.06, 0.05, 0.03)), "moss", 6, 3)
+    m.obox(V((0, 0, 0.0005)), (0.94, 0.94, 0.001), "moss")                     # the ground (thin: the chopper's feet
+    m.blob(V((0.02, -0.05, -0.012)), V((0.3, 0.26, 0.0135)), "wood_weathered", 10, 3)   # stand just on it), trodden earth
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
     # ---- moving parts
@@ -138,7 +140,7 @@ def clips(parts, chips):
                 pose[name] = A.hidden()
                 continue
             u = min((tau - 1) / 9, 1.0)                       # 9 frames of flight
-            ground = -(HIT.z + 0.01) + 0.0032                 # chip's centre when it lies flat on the floor
+            ground = -(HIT.z + 0.01) + 0.0052                 # chip's centre when it lies flat on the ground
             z = 4 * peak * u * (1 - u) + ground * u * u       # up, over, down onto the floor
             off = d.normalized() * dist * (1 - (1 - u) ** 1.6) + V((0, 0, z))
             rot = A.q(spin, 360 * smooth_land(u))             # one whole tumble: it lands flat

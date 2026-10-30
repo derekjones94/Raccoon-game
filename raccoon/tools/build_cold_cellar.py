@@ -40,7 +40,14 @@ SPOT = V((0.28, -0.12, FLOOR + 0.0015))          # behind the ice bin, facing th
 BIN = (SPOT.x - 0.16, SPOT.x + 0.16, SPOT.y - 0.31, SPOT.y - 0.1)
 FACE_Y = 0.22                                    # front face of the doorway's stonework
 DOOR = (-0.44, -0.18, 0.3)                       # doorway x0, x1, height
-MOUND_C, MOUND_R = V((0.0, 0.62, 0.0)), V((0.9, 0.36, 0.5))
+MOUND_C, MOUND_R = V((-0.3, 0.55, 0.0)), V((0.62, 0.42, 0.6))   # a round, tall hill at the back left ...
+WALL_Y = (FACE_Y + 0.004, FACE_Y + 0.08)                        # ... its front cut off by a stone retaining wall
+
+
+def hill_z(x, y):
+    """The hill's height at (x, y) (0 outside it)."""
+    u = math.hypot((x - MOUND_C.x) / MOUND_R.x, (y - MOUND_C.y) / MOUND_R.y)
+    return MOUND_R.z * (1 - u ** 2.2) ** 0.62 if u < 1 else 0.0
 SHOVES = SP.SHOVES
 
 
@@ -68,9 +75,12 @@ def mound(m, rnd, segs=20):
     rings = []
     for u in us:
         z = MOUND_R.z * (1 - u ** 2.2) ** 0.62
-        rings.append([m.bm.verts.new(MOUND_C + V((MOUND_R.x * u * wob[k] * math.cos(TAU * k / segs),
-                                                   MOUND_R.y * u * wob[k] * math.sin(TAU * k / segs), z)))
-                      for k in range(segs)])
+        ring = []
+        for k in range(segs):
+            p = MOUND_C + V((MOUND_R.x * u * wob[k] * math.cos(TAU * k / segs), MOUND_R.y * u * wob[k] * math.sin(TAU * k / segs), z))
+            p.y = max(p.y, WALL_Y[1] - 0.01)                       # the front stops behind the retaining wall
+            ring.append(m.bm.verts.new(p))
+        rings.append(ring)
     top = m.bm.verts.new(MOUND_C + V((0, 0, MOUND_R.z)))
     faces = []
     for r, (a, b) in enumerate(zip(rings, rings[1:])):
@@ -105,6 +115,28 @@ def build(coll, rnd):
                    top="stone_frost")
     m.obox(V(((x0 + x1) / 2, yc, h + 0.04)), (x1 - x0 + 0.3, fd + 0.01, 0.08), "stone_pale", top="stone_frost")
     m.obox(V(((x0 + x1) / 2, FACE_Y + fd, h / 2)), (x1 - x0, 0.01, h), "soot")                       # the dark inside
+    # the retaining wall: stone blocks in courses across the hill's cut front, their tops following the hill's
+    # outline (a capstone line just proud of the turf), the doorway's stonework set into it
+    yw = (WALL_Y[0] + WALL_Y[1]) / 2
+    step = 0.06
+    xs = [MOUND_C.x - MOUND_R.x + step * i for i in range(int(2 * MOUND_R.x / step) + 2)]
+    for i, (xa, xb) in enumerate(zip(xs, xs[1:])):
+        za, zb = hill_z(xa, WALL_Y[1]), hill_z(xb, WALL_Y[1])
+        top = min(za, zb) - 0.004                                                 # the blocks stop under the coping
+        if max(za, zb) < 0.03:
+            continue
+        mid, d = V(((xa + xb) / 2, yw, (za + zb) / 2 + 0.008)), V((xb - xa, 0, zb - za))   # a capstone slab along
+        m.obox(mid, (d.length + 0.012, WALL_Y[1] - WALL_Y[0] + 0.014, 0.03), "stone_pale",       # the hill's curve
+               top="stone_frost", rot=(0, -math.atan2(d.z, d.x), 0))
+        z = 0.0
+        if xb > x0 - 0.14 and xa < x1 + 0.14:                                     # over the doorway's frame
+            z = h + 0.08
+        j = 0
+        while z < top - 0.005:
+            z1 = min(top, (math.floor(z / 0.1 + 1e-6) + 1) * 0.1)
+            sw = "stone_light" if (i + j) % 2 else "stone_mid"
+            m.obox(V(((xa + xb) / 2, yw, (z + z1) / 2)), (xb - xa, WALL_Y[1] - WALL_Y[0], z1 - z), sw)
+            z, j = z1, j + 1
     m.obox(V(((x0 + x1) / 2, FACE_Y + 0.05, FLOOR + 0.006)), (x1 - x0, fd, 0.012), "stone_mid")       # threshold
     for k in range(5):                                                                                # icicles
         x = x0 - 0.1 + k * (x1 - x0 + 0.2) / 4
@@ -118,6 +150,7 @@ def build(coll, rnd):
     for k in range(3):
         m.cyl(bc + V((-0.03 + 0.03 * k, 0.0, 0.235)), 0.012, 0.05, "silver", axis=(0.3 * (k - 1), 0.2, 1), segs=4, r2=0.004)
     m.obox(V((0.0, 0.14, 0.2)), (0.035, 0.035, 0.4), "wood_dark")                                   # drying post
+    m.beam(V((0.0, 0.14, 0.39)), V((x1 + 0.12, FACE_Y + 0.02, h + 0.06)), 0.006, "rope")           # its line, to the lintel
     sl = V((-0.48, -0.55, FLOOR))
     for s in (-1, 1):
         m.beam(sl + V((-0.18, s * 0.08, 0.012)), sl + V((0.16, s * 0.08, 0.012)), 0.014, "wood_dark")   # runners

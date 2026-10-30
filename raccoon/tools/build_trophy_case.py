@@ -1,7 +1,7 @@
 """bld_trophy_case_1x1: a glass case on legs, for showing off one stolen relic. A decoration.
 
 A little dark-wood stand on turned legs, a brass plaque on its front; on it a glass case with brass edges and a
-pointed lid (the glass itself shows only as streaks of light). Inside, a red velvet cushion on a turning plinth, and
+pointed lid (the glass itself isn't modelled: it would hide the relic). Inside, a red velvet cushion on a turning plinth, and
 the relic on the cushion.
 
 There is one child node per relic: `pr_relic_caravan_bell` (a brass caravan bell on a red ribbon) and
@@ -83,9 +83,6 @@ def build(coll, rnd):
             m.beam(V((sx * hw, sy * hd, z1)), apex, 0.009, "gold_dark")
     m.blob(apex + V((0, 0, 0.018)), V((0.02, 0.02, 0.022)), "gold_light", 6, 4)                 # finial
     m.blob(apex + V((0, 0, 0.045)), V((0.01, 0.01, 0.012)), "ruby", 5, 3)
-    for x0, z0s in ((-0.11, 0.18), (-0.05, 0.12), (0.06, 0.22)):                                 # light on the glass
-        m.beam(V((x0, -hd - 0.002, z0 + z0s)), V((x0 + 0.06, -hd - 0.002, z0 + z0s + 0.07)), 0.004, "stone_frost")
-    m.beam(V((hw + 0.002, -0.06, z0 + 0.15)), V((hw + 0.002, 0.02, z0 + 0.23)), 0.004, "stone_frost")
     # ---- a velvet rope on two brass posts in front
     for x in (-0.3, 0.3):
         m.cyl(V((x, -0.32, 0.11)), 0.012, 0.22, "gold", segs=6)
@@ -136,18 +133,18 @@ def build(coll, rnd):
     mm.blob(rc + V((0, 0, 0.047)), V((0.012, 0.011, 0.009)), "ruby", 6, 3)
     mm.obox(rc + V((0, -0.0135, 0.036)), (0.016, 0.002, 0.008), "gold_dark")                     # the duke's crest
     parts["pr_relic_duke_signet"] = grow(A.part(mm.obj("pr_relic_duke_signet", coll), root, CUSHION))
-    # sparkles
+    # sparkles: four-point stars winking on the brass edges and the finial (not loose in the air)
     for i, d in enumerate(SPARKLES):
         mm = B.M()
-        c = CUSHION + V(d)
+        c = V(d)
         mm.obox(c, (0.03, 0.002, 0.004), "flame_white")
         mm.obox(c, (0.004, 0.002, 0.03), "flame_white")
-        mm.obox(c, (0.004, 0.03, 0.004), "flame_white")
         parts[f"pr_sparkle_{i + 1}"] = A.part(mm.obj(f"pr_sparkle_{i + 1}", coll), root, c)
     return root, parts
 
 
-SPARKLES = [(-0.08, -0.07, 0.1), (0.09, -0.05, 0.06), (0.03, -0.09, 0.15), (-0.07, 0.05, 0.16)]
+SPARKLES = [(-CASE[0], -CASE[1] - 0.008, TOP + CASE[2]), (CASE[0], -CASE[1] - 0.008, TOP + 0.02),   # on the brass edges,
+            (0.0, -0.026, TOP + CASE[2] + 0.108), (CASE[0], -CASE[1] - 0.008, TOP + CASE[2])]      # and the finial
 
 
 def clips(parts):
@@ -162,7 +159,7 @@ def clips(parts):
         for i in range(k):
             t = ((p - i / k - 0.1) % 1.0) * k
             g = math.sin(math.pi * t / 0.7) if t < 0.7 else 0.0
-            out[f"pr_sparkle_{i + 1}"] = (None, A.q((0, 0, 1), 30 * t) @ A.q((0, 1, 0), 45 * t), max(0.001, g))
+            out[f"pr_sparkle_{i + 1}"] = (None, A.q((0, 1, 0), 45 * t), max(0.001, g))        # spins in its own plane
         return out
 
     A.animate(parts, {"idle": (FRAMES, pose), "work": (FRAMES, pose)})

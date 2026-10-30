@@ -141,7 +141,7 @@ def build(coll, rnd):
     top = ch + V((0, 0, 1.09))
     for i in range(3):
         m = B.M()
-        m.blob(top, V((0.05, 0.05, 0.04)), "stone_pale", 7, 3)
+        A.puff(m, top, 0.045, "stone_pale")
         parts[f"pr_smoke_{i + 1}"] = A.part(m.obj(f"pr_smoke_{i + 1}", coll), root, top)
     for i in range(3):
         m = B.M()
@@ -169,9 +169,7 @@ def clips(parts):
         pose = {}
         for i in range(3):
             u = (p * speed + i / 3) % 1.0
-            s = math.sin(math.pi * u)
-            pose[f"pr_smoke_{i + 1}"] = (V((0.06 * u, 0.03 * math.sin(TAU * u), 0.34 * u)), None,
-                                         max((0.6 + 1.1 * u) * s, 0.001))
+            pose[f"pr_smoke_{i + 1}"] = (V((0.06 * u, 0.03 * math.sin(TAU * u), 0.34 * u)), None, A.puff_size(u))
         return pose
 
     def idle(p):

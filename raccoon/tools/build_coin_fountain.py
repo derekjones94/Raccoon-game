@@ -131,16 +131,25 @@ def build(coll, rnd):
     PR.trim_below_floor(root)
 
     parts = {}
-    # water: the spout's jet, then streams from the bowls' lips (static sheets) with drops running down them
+    # water: the spout's jet, then streams from the bowls' lips: flat sheets of water spilling over the lip and
+    # widening as they fall (never thin rods: those read as legs holding the bowls up), drops running down them
     for i, (top, bot, n) in enumerate(STREAMS):
         mm = B.M()
         top, bot = V(top), V(bot)
-        mm.beam(top, bot, 0.012, "water")
+        if i == 0:                                                     # the jet: two crossed sheets, seen from all round
+            sheet(mm, top, bot, 0.03, 0.05, V((1, 0, 0)), "stone_frost")
+            sheet(mm, top, bot, 0.03, 0.05, V((0, 1, 0)), "stone_frost")
+        else:                                                          # an arc pouring off the lip, out and down
+            pts = arc(top, bot)
+            for k in range(len(pts) - 1):
+                sheet(mm, pts[k], pts[k + 1], 0.04 + 0.012 * k / len(pts), 0.04 + 0.012 * (k + 1) / len(pts), None,
+                      "stone_frost" if k % 2 else "water")
         parts[f"pr_stream_{i + 1}"] = A.part(mm.obj(f"pr_stream_{i + 1}", coll), root, top)
         mm = B.M()
-        d = (bot - top) / n
-        for k in range(n):
-            mm.blob(top + d * (k + 0.5), V((0.011, 0.011, 0.016)), "stone_frost", 5, 3)
+        pts = arc(top, bot) if i else [top + (bot - top) * t / n for t in range(n + 1)]
+        for k in range(n):                                             # drops: highlights along the stream
+            c = pts[int((k + 0.5) / n * (len(pts) - 1))]
+            mm.blob(c, V((0.006, 0.006, 0.018)), "stone_frost", 8, 4)
         parts[f"pr_drops_{i + 1}"] = A.part(mm.obj(f"pr_drops_{i + 1}", coll), root, top)
     # ripples where the water lands
     for i, c in enumerate(RIPPLES):
@@ -160,6 +169,28 @@ def build(coll, rnd):
         mm.obox(c, (0.005, 0.04, 0.005), "flame_white")
         parts[f"pr_glint_{i + 1}"] = A.part(mm.obj(f"pr_glint_{i + 1}", coll), root, c)
     return root, parts
+
+
+def arc(top, bot, n=6):
+    """Points of water pouring off a lip at top and landing at bot: it leaves sideways and falls ever steeper."""
+    return [V((top.x + (bot.x - top.x) * t, top.y + (bot.y - top.y) * t, top.z + (bot.z - top.z) * t * t))
+            for t in (k / n for k in range(n + 1))]
+
+
+def sheet(m, top, bot, w0, w1, side=None, swatch="water"):
+    """A thin sheet of falling water from top to bot, w0 wide at the top and w1 at the bottom, both faces."""
+    d = bot - top
+    if side is None:
+        side = V((0, 0, 1)).cross(V((d.x, d.y, 0))).normalized()
+    n = side.cross(d).normalized() * 0.0015                            # a thin closed slab: seen from both sides
+    q = [top - side * w0 / 2, top + side * w0 / 2, bot + side * w1 / 2, bot - side * w1 / 2]
+    f = [m.bm.verts.new(v + n) for v in q]
+    k = [m.bm.verts.new(v - n) for v in q]
+    faces = [m.bm.faces.new(f), m.bm.faces.new(list(reversed(k)))]
+    for i in range(4):
+        j = (i + 1) % 4
+        faces.append(m.bm.faces.new((f[i], k[i], k[j], f[j])))
+    m.tag(faces, swatch)
 
 
 def _streams():
@@ -187,7 +218,7 @@ def clips(parts):
         for i, (top, bot, n) in enumerate(STREAMS):
             d = (V(bot) - V(top)) / n
             k = (4 * p) % 1.0                                       # four drop-steps a loop: a steady flow
-            out[f"pr_drops_{i + 1}"] = (d * k, None, None)
+            out[f"pr_drops_{i + 1}"] = (None, None, 0.6 + 0.6 * abs(math.sin(TAU * (4 * p + 0.29 * i))))   # glitter
             out[f"pr_stream_{i + 1}"] = (None, None, (1 + 0.15 * math.sin(TAU * (6 * p + 0.3 * i)), 1, 1))
         for i in range(len(RIPPLES)):
             t = (2 * p + 0.37 * i) % 1.0
@@ -224,7 +255,8 @@ def main():
                                       tool="prop_mug" if drink else None)
         crew.append((rig, mesh, mug, "work", {}))
         objs += [o for o in (rig, mesh, mug) if o]
-    allow = [(n, NAME) for n in parts] + [(f"pr_drops_{i + 1}", f"pr_stream_{i + 1}") for i in range(len(STREAMS))]
+    allow = [(n, NAME) for n in parts] + [(f"pr_drops_{i + 1}", f"pr_stream_{i + 1}") for i in range(len(STREAMS))] + \
+            [(f"pr_ripple_{i + 1}", f"pr_stream_{i + 6}") for i in range(len(RIPPLES))]      # the water lands in its ripple
     probs = A.check(root, 2, 2, crew=crew, allow=allow)
     A.report(NAME, probs, ROOT / "renders" / "qa_buildings.txt")
     if do_renders:

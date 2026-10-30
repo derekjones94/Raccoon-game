@@ -126,7 +126,7 @@ def build(coll, rnd, tip_w):
     for p, s in (((-0.42, -0.62), 0.05), ((0.2, -0.94 + 0.05), 0.0), ((-0.1, -0.6), 0.035)):
         if s:
             m.blob(V((p[0], p[1], s * 0.4)), V((s * 1.3, s, s * 0.8)), "stone_light", 6, 3)
-    m.blob(V((-0.25, -0.75, 0.0)), V((0.08, 0.05, 0.025)), "moss", 6, 3)
+    m.obox(V((0, 0, 0.002)), (0.94, 1.94, 0.004), "moss")                                          # the grassy bank
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
     parts = _parts(coll, root, rnd, tip_w)

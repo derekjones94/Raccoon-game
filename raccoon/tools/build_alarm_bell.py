@@ -72,12 +72,17 @@ def build(coll, rnd):
     # ---- cobbled pad in the grass
     m.obox(V((0, 0, 0.002)), (0.94, 0.94, 0.004), "moss")
     m.obox(V((0, 0, FLOOR - 0.006)), (0.8, 0.8, 0.004), "stone_mid")                       # grout, below the cobbles' tops
-    for k in range(26):
-        a, r = rnd.uniform(0, TAU), 0.4 * math.sqrt(rnd.random())
-        h = FLOOR - 0.00018 * k                                                               # no two tops coplanar
-        c = V((r * math.cos(a), r * math.sin(a) * 0.95, h / 2))
-        m.cyl(c, rnd.uniform(0.045, 0.06), h, rnd.choice(["stone_mid", "stone_light", "stone_pale"]), segs=6,
-              cap="stone_light", rot=rnd.uniform(0, 1))
+    k = 0                                                       # laid in staggered rows, grout showing between: no
+    for row in range(9):                                        # cobble ever on another
+        y = -0.352 + 0.088 * row
+        for col in range(8):
+            x = -0.35 + 0.1 * col + (0.05 if row % 2 else 0.0)
+            if abs(x) > 0.36:
+                continue
+            h = FLOOR - 0.00005 * k                                                           # no two tops coplanar
+            m.cyl(V((x + rnd.uniform(-0.004, 0.004), y + rnd.uniform(-0.004, 0.004), h / 2)), rnd.uniform(0.037, 0.042), h,
+                  rnd.choice(["stone_mid", "stone_light", "stone_pale"]), segs=6, cap="stone_light", rot=rnd.uniform(0, 1))
+            k += 1
     # ---- the frame: two posts on stone feet, raking struts, a beam across the top, the shingled cap
     top = AXLE.z + 0.12
     for sa in (-1, 1):

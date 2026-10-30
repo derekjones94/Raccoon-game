@@ -127,6 +127,11 @@ def build(coll, rnd):
     m.beam(V((HOIST.x, HOIST.y - 0.02, JIB.z - 0.22)), V((HOIST.x, HOIST.y - 0.2, JIB.z + 0.005)), 0.022, "wood_mid")
     m.cyl(V((JIB.x, JIB.y, JIB.z + 0.0)), 0.022, 0.03, "iron", axis=(1, 0, 0), segs=8)       # pulley block
     m.cyl(V((HOIST.x + 0.04, HOIST.y, DECK + 0.3)), 0.03, 0.05, "wood_light", axis=(1, 0, 0), segs=8, cap="wood_dark")
+    rx = HOIST.x + 0.02                                                       # the hauling rope: over the pulley,
+    pts = [V((rx, JIB.y, JIB.z + 0.022)), V((rx, HOIST.y - 0.031, JIB.z + 0.022)),   # back along the jib and down
+           V((rx, HOIST.y - 0.031, DECK + 0.335)), V((rx, HOIST.y, DECK + 0.33))]   # the post to the winch drum
+    for q0, q1 in zip(pts, pts[1:]):
+        m.beam(q0, q1, 0.006, "rope")
     for c in ((0.86, -0.55), (0.86, -0.75), (0.45, -0.82)):                                 # loads waiting
         PR_crate(m, V((c[0], c[1], DECK)), 0.12)
     m.cyl(V((0.86, -0.3, DECK + 0.015)), 0.06, 0.03, "rope", segs=10, cap="rope_dark")
@@ -196,6 +201,7 @@ def build(coll, rnd):
     PR_crate(m, LOAD, 0.12, sw="wood_light")
     m.beam(LOAD + V((-0.05, 0, 0.12)), LOAD + V((0, 0, 0.135)), 0.005, "rope")
     m.beam(LOAD + V((0.05, 0, 0.12)), LOAD + V((0, 0, 0.135)), 0.005, "rope")
+    m.cyl(LOAD + V((0, 0, 0.142)), 0.012, 0.005, "iron", axis=(0, 1, 0), segs=8)            # the hook ring
     parts["pr_load"] = A.part(m.obj("pr_load", coll), root, LOAD)
     m = B.M()
     wc = V((HOIST.x + 0.075, HOIST.y, DECK + 0.3))

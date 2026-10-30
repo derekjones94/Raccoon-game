@@ -142,7 +142,7 @@ def build(coll, rnd):
     for i in range(2):
         m = B.M()
         c = V((POT.x + 0.025 * (i - 0.5), POT.y - 0.035, RIM_Z + 0.02))          # the far side, off the face
-        m.blob(c, V((0.03, 0.03, 0.022)), "stone_frost", 7, 3)
+        A.puff(m, c, 0.024)
         parts[f"pr_steam_{i + 1}"] = A.part(m.obj(f"pr_steam_{i + 1}", coll), root, c)
     for i, a in enumerate((0.9, 3.0, 5.0)):                                                     # flames under the pot
         m = B.M()
@@ -166,9 +166,8 @@ def clips(parts):
             pose[f"pr_bubble_{i}"] = (None, None, max(0.3 + 1.2 * u, 0.001) if u < 0.85 else 0.001)
         for i in (1, 2):                                               # steam rises and thins
             u = (p + i / 2) % 1.0
-            s = math.sin(math.pi * u)
             pose[f"pr_steam_{i}"] = (V((0.02 * math.sin(TAU * u + i), -0.05 * u, 0.18 * u)), None,
-                                     max((0.6 + 0.9 * u) * s * (0.8 + 0.3 * boil), 0.001))
+                                     A.puff_size(u) * (0.8 + 0.3 * boil))
         for i, (f, ph) in enumerate(((3, 0.0), (4, 0.4), (5, 0.7))):
             pose[f"pr_flame_{i + 1}"] = (None, None, (1, 1, 1 + 0.25 * math.sin(TAU * (f * p + ph))))
         for i in range(1, 4):

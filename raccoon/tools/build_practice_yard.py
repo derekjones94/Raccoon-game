@@ -107,7 +107,10 @@ def build(coll, rnd):
     m.beam(hook + V((0.03, 0, 0.0)), hook, 0.005, "iron_dark")                                      # the purse hook
     # ---- round about: straw bales, a basket of purses, a chalk score board
     for k, (x, y) in enumerate(((-1.15, 0.65), (-0.95, 0.68), (1.12, 0.62))):
-        m.obox(V((x, y, 0.06)), (0.18, 0.12, 0.12), "gold_light", top="cloth_mustard", rot=(0, 0, 0.2 * k))
+        m.obox(V((x, y, 0.06)), (0.18, 0.12, 0.12), "fur_tan", top="burlap", rot=(0, 0, 0.2 * k))   # darker straw
+        for dx in (-0.045, 0.045):                                                    # than the sand, two twine bands
+            off = V((dx * math.cos(0.2 * k), dx * math.sin(0.2 * k), 0))
+            m.obox(V((x, y, 0.06)) + off, (0.012, 0.126, 0.126), "rope_dark", rot=(0, 0, 0.2 * k))
     bk = V((0.98, -0.62, 0.0))
     m.cyl(bk + V((0, 0, 0.05)), 0.08, 0.1, "burlap", segs=8, r2=0.09, cap="wood_dark")
     for k in range(4):

@@ -118,7 +118,7 @@ def build(coll, rnd):
     for i in range(2):
         mm = B.M()
         c = br + V((0.09 + 0.01 * i, 0, 0.19))
-        mm.blob(c, V((0.025, 0.025, 0.02)), "stone_frost", 7, 3)
+        A.puff(mm, c, 0.02)
         parts[f"pr_steam_{i + 1}"] = A.part(mm.obj(f"pr_steam_{i + 1}", coll), root, c)
     mm = B.M()
     sc = V((MORTAR.x, MORTAR.y, MORTAR.z + 0.002))
@@ -134,8 +134,7 @@ def clips(parts):
             pose[f"pr_bandage_{i}"] = (None, A.q((0, 1, 0), 6 * math.sin(TAU * (p + 0.3 * i))), None)
         for i in (1, 2):
             u = (p * (1 + boil) + i / 2) % 1.0
-            s = math.sin(math.pi * u)
-            pose[f"pr_steam_{i}"] = (V((0.04 * u, 0.01 * math.sin(TAU * u), 0.15 * u)), None, max((0.5 + 0.8 * u) * s * (0.7 + 0.5 * boil), 0.001))
+            pose[f"pr_steam_{i}"] = (V((0.04 * u, 0.01 * math.sin(TAU * u), 0.15 * u)), None, A.puff_size(u) * (0.7 + 0.5 * boil))
         return pose
 
     def idle(p):

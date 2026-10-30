@@ -114,15 +114,16 @@ def build(coll, rnd):
     flags = []
     for i in range(4):
         for j in range(3):
-            c = V((-0.05 + 0.2 * i + rnd.uniform(-0.01, 0.01), -0.32 + 0.24 * j + rnd.uniform(-0.01, 0.01), 0.0))
-            flags.append((c, rnd.choice(["stone_mid", "stone_light", "stone_pale"])))
+            c = V((-0.05 + 0.2 * i + rnd.uniform(-0.003, 0.003), -0.32 + 0.24 * j + rnd.uniform(-0.003, 0.003), 0.0))
+            flags.append((c, rnd.choice(["pewter", "fur_light", "fur_mid"])))                 # warm grey stone, not blue
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
 
     # the yard's flagstones: their own still object (the brush and paws touch them)
     m = B.M()
-    for c, sw in flags:
-        m.obox(c + V((0, 0, FLOOR / 2)), (0.19, 0.23, FLOOR), sw, rot=(0, 0, rnd.uniform(-0.03, 0.03)))
+    for k, (c, sw) in enumerate(flags):                                    # laid square, even joints, never touching
+        h = FLOOR - 0.00012 * k                                                # (and no two tops at the same height)
+        m.obox(c + V((0, 0, h / 2)), (0.18, 0.22, h), sw, rot=(0, 0, rnd.uniform(-0.012, 0.012)))
     floor = m.obj("pr_floor", coll)
     floor.parent = root
     parts = {}

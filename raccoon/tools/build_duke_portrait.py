@@ -125,7 +125,10 @@ def build(coll, rnd):
     m.cyl(t + V((0.05, 0.03, 0.22)), 0.022, 0.03, "iron_dark", segs=8, cap="soot")               # soot pot
     m.beam(t + V((0.05, 0.03, 0.23)), t + V((0.08, -0.03, 0.27)), 0.006, "wood_light")         # brush in it
     m.blob(t + V((0.085, -0.04, 0.278)), V((0.008, 0.008, 0.012)), "soot", 5, 3)
-    m.blob(V((-0.25, -0.25, 0.002)), V((0.035, 0.03, 0.002)), "soot", 6, 3)                      # a smudge
+    m.obox(V((0, 0, 0.002)), (0.94, 0.94, 0.004), "wood_mid", top="wood_light")                   # a plank floor,
+    m.obox(V((0, 0.02, 0.005)), (0.72, 0.62, 0.002), "cloth_red")                                  # a rug with a
+    m.obox(V((0, 0.02, 0.0062)), (0.66, 0.56, 0.0004), "cloth_blue")                               # field and a border
+    m.blob(V((-0.25, -0.2, 0.0066)), V((0.035, 0.03, 0.0004)), "soot", 8, 3)                       # a soot smudge on it
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
     # the picture, leaning back on the easel

@@ -22,6 +22,16 @@ it can't, so it needs eyes on a close-up render from several sides (front, back,
   transform otherwise. *(Hammock: the sleep spot sat 0.46 m too high.)*
 - [ ] **Things rest on the floor, not in or above it**, including after `trim_below_floor`.
 
+- [ ] **Everything stands on ground.** A piece whose props sit round it (coins, bottles, chips, stones, posts) has a
+  ground slab under all of them, and props stay on their patch. *(Duke portrait, goblet planter, mirror mosaic,
+  woodpile, fishing spot, rummage camp, den, patio bar posts: all floated on nothing.)*
+- [ ] **Built things sit in what they're built into.** A doorway in a hill is set into the hill from every side, with
+  nothing rising out of the back. *(Cold cellar: the stone front stood up out of a low oval mound; it's now a round
+  hill cut by a retaining wall.)*
+- [ ] **Scattered things don't overlap.** Cobbles, flagstones and tiles are laid in a grid with even joints and a
+  little jitter, never dropped at random. *(Alarm bell cobbles piled on each other; janitor yard tiles overlapped.)*
+- [ ] **Edges are clean.** Planks cut to the shape they make (a round deck has round ends). *(Patio bar.)*
+
 ## Things reading right
 
 - [ ] **Cloth is one piece.** A blanket, banner or tarp is one connected sheet that follows the surface it lies on
@@ -37,6 +47,18 @@ it can't, so it needs eyes on a close-up render from several sides (front, back,
   the frame hid the ringer.)*
 - [ ] **Things line up.** Repeated elements (slats, bands, rungs, cleats, battens) are evenly spaced and aligned
   across neighbouring parts.
+
+- [ ] **Effects read as what they are.** Smoke and steam are soft clusters of round blobs (10+ sides, never 5 or 6:
+  those read as cubes), starting at their source and overlapping into one plume. Water is sheets or arcs, never thin
+  straight rods (they read as legs). Flies, glints and sparks are big enough to read, close to what they belong to.
+  *(Smoke and steam in five buildings, the fountain, the trash bin's flies, the trophy case's glints.)*
+- [ ] **Sheets face the camera.** A tarp or awning seen edge-on vanishes: slope it so the game camera sees its face
+  (a lean-to runs from its beam down to the ground). *(Rummage camp tarp.)*
+- [ ] **Colours separate.** A prop is never the same swatch as the ground under it, and the blue-tinted `stone_*`
+  swatches only go on things that should look blue-grey: plain stone paving uses `pewter`, `fur_light`, `fur_mid`.
+  *(Practice yard bales vanished into the sand; janitor flagstones read as blue squares.)*
+- [ ] **Silhouettes say what things are.** A post, an arm and one hanging rope is a gallows: show the rope running
+  to its winch. Trailing plants have leaves, not beads. *(Haulers lodge hoist, goblet ivy.)*
 
 ## Surfaces
 
@@ -65,4 +87,6 @@ it can't, so it needs eyes on a close-up render from several sides (front, back,
 
 - [ ] Automatic QA clean (`qa_buildings.txt`, and `qa_report.txt` for clips).
 - [ ] Close-up renders from several sides checked against this list, not just the game-camera GIF.
+- [ ] Before calling a dark patch on a roof or wall a mistake, check it isn't a shadow (smoke and flags cast them).
+  *(Two false alarms in the October audit: the den roof's "extra lip" and the guild hall's "flagpole in the roof".)*
 - [ ] Anything new we catch in review gets added here.

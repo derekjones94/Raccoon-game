@@ -104,15 +104,16 @@ def build(coll, rnd):
                 shard(m, (x, z), rnd.uniform(0.016, 0.021), rnd.choice((3, 4, 4)), rnd.choice(MIRROR + MIRROR + GLASS), rnd,
                       y + 0.0012)
     m = solid
+    m.obox(V((0, 0, 0.002)), (0.94, 0.94, 0.004), "fur_mid", top="pewter")                        # a flagstone pad
     # ---- bottles on the ground beside it, the source of the glass; a cracked one
     for k, (x, sw) in enumerate(((0.33, "emerald"), (0.4, "sapphire"), (-0.36, "gold_light"))):
         c = V((x, -0.12 - 0.05 * (k % 2), 0.0))
         m.cyl(c + V((0, 0, 0.05)), 0.03, 0.1, sw, segs=6, cap="iron_dark")
         m.cyl(c + V((0, 0, 0.12)), 0.012, 0.04, sw, segs=6, r2=0.01)
-    m.cyl(V((-0.3, -0.25, 0.022)), 0.028, 0.09, "emerald", segs=6, axis=(1, 0.3, 0))                  # lying down
+    m.cyl(V((-0.3, -0.25, 0.0285)), 0.028, 0.09, "emerald", segs=6, axis=(1, 0.3, 0))                 # lying down
     for k in range(5):                                                                                 # loose chips
         x, yy = rnd.uniform(-0.35, 0.35), rnd.uniform(-0.38, -0.15)
-        m.obox(V((x, yy, 0.003)), (0.02, 0.015, 0.004), rnd.choice(GLASS + MIRROR), rot=(0, 0, rnd.uniform(0, 3)))
+        m.obox(V((x, yy, 0.0055)), (0.02, 0.015, 0.003), rnd.choice(GLASS + MIRROR), rot=(0, 0, rnd.uniform(0, 3)))
     root = m.obj(NAME, coll)
     PR.trim_below_floor(root)
     mosaic = face.obj("pr_mosaic", coll)

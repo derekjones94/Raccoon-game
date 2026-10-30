@@ -58,7 +58,8 @@ def on_heap(m, ang, hf, fn, lift=0.0):
 
 def build(coll, rnd):
     m = B.M()
-    # ---- ground: a trampled, irregular dirt patch
+    # ---- ground: grass, and on it a trampled, irregular dirt patch
+    m.obox(V((0, 0, 0.0015)), (1.94, 1.94, 0.003), "moss")
     pts = []
     for k in range(14):
         a = math.tau * k / 14
@@ -71,7 +72,12 @@ def build(coll, rnd):
     lt = V((-0.55, 0.62, 0))
     for dx in (-0.28, 0.28):
         m.obox(lt + V((dx, -0.18, 0.21)), (0.03, 0.03, 0.42), "wood_dark")
-    m.obox(lt + V((0, 0.02, 0.29)), (0.66, 0.46, 0.014), "cloth_mustard", rot=(-0.55, 0, 0))     # tarp: posts -> ground
+    top, foot = lt + V((0, -0.18, 0.42)), lt + V((0, 0.23, 0.012))             # tarp: from the beam down to the
+    d = foot - top                                                              # ground at the back, pegged there
+    m.obox((top + foot) / 2, (0.66, d.length, 0.014), "cloth_mustard", rot=(math.atan2(d.z, d.y), 0, 0))
+    for dx in (-0.3, 0.3):
+        m.beam(foot + V((dx, 0.03, 0.03)), foot + V((dx, 0.07, -0.02)), 0.012, "wood_light")   # pegs and their
+        m.beam(foot + V((dx, -0.01, 0.006)), foot + V((dx, 0.05, 0.02)), 0.004, "rope")       # ties
     m.beam(lt + V((-0.3, -0.18, 0.42)), lt + V((0.3, -0.18, 0.42)), 0.022, "wood_dark")
     m.blob(lt + V((0.0, 0.1, 0.03)), V((0.2, 0.08, 0.03)), "cloth_blue", 8, 3)                   # bedroll
     m.cyl(lt + V((0.18, 0.1, 0.035)), 0.03, 0.12, "cloth_cream", axis=(1, 0, 0), segs=6)

@@ -1,12 +1,4 @@
-== bld_woodpile_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_fishing_spot_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_washing_pool_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_rummage_camp_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_den_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_farm_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
@@ -16,23 +8,9 @@
 
 == bld_rubble_heap_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_cold_cellar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_fence_stall_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_smelter_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_brewery_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_tinker_bench_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_trash_bin_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_patio_bar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_guild_hall_3x3: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_infirmary_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_map_room_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
@@ -40,21 +18,7 @@
 
 == bld_graveyard_3x3: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_haulers_lodge_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_guard_post_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_janitor_shed_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_alarm_bell_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_coin_fountain_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_goblet_planter_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_mirror_mosaic_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_trophy_case_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_string_lights_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
@@ -62,15 +26,11 @@
 
 == bld_bottlecap_banner_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_kit_swing_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_junk_throne_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_dice_table_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
-== bld_practice_yard_3x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_sparring_ring_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
@@ -85,3 +45,43 @@
 == bld_shadow_course_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_hammock_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_den_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_guild_hall_3x3: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_smelter_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_brewery_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_infirmary_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_coin_fountain_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_trophy_case_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_trash_bin_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_goblet_planter_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_mirror_mosaic_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_woodpile_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_rummage_camp_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_fishing_spot_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_cold_cellar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_patio_bar_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_alarm_bell_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_janitor_shed_2x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_practice_yard_3x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_haulers_lodge_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

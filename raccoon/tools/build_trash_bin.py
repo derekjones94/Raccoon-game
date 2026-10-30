@@ -112,9 +112,11 @@ def build(coll, rnd):
         parts[f"pr_trash_{i + 1}"] = A.part(m.obj(f"pr_trash_{i + 1}", coll), root, c)
     for i in range(2):                                                                   # flies
         m = B.M()
-        c = HEAP_C + V((0.0, -0.04, 0.3 + 0.03 * i))                                # above the can
-        m.obox(c, (0.008, 0.006, 0.006), "soot")
-        m.obox(c + V((0, 0, 0.004)), (0.014, 0.004, 0.002), "stone_frost")
+        c = HEAP_C + V((0.0, -0.04, HEAP_R.z + 0.07 + 0.03 * i))                    # just over the heap
+        m.blob(c, V((0.011, 0.008, 0.008)), "soot", 8, 4)                           # a fat fly: body, head, wings
+        m.blob(c + V((0.011, 0, 0.001)), V((0.006, 0.006, 0.006)), "iron_dark", 6, 4)
+        for sy in (-1, 1):
+            m.blob(c + V((-0.003, sy * 0.011, 0.007)), V((0.009, 0.007, 0.002)), "stone_frost", 8, 3)
         parts[f"pr_fly_{i + 1}"] = A.part(m.obj(f"pr_fly_{i + 1}", coll), root, c)
     return root, spill, parts
 
