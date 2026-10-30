@@ -4,6 +4,7 @@ Art for the raccoon colony sim (Godot 4). Every game-ready model is in **`raccoo
 
 - **[`raccoon/INTEGRATION.md`](raccoon/INTEGRATION.md):** how to wire up the animated buildings. It covers where raccoons stand and which way they face (`spot_` markers), how to attach tools so the axe hits with its edge and the rod points at the water, and which clip plays at which building.
 - **[`raccoon/ANIMATION_TRACKER.md`](raccoon/ANIMATION_TRACKER.md):** which buildings are animated and which are still to do.
+- **[`raccoon/ART_CHECKLIST.md`](raccoon/ART_CHECKLIST.md):** every mistake caught in review, as a checklist each new model is checked against before sign-off.
 
 ## Conventions
 

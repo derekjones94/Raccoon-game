@@ -62,8 +62,6 @@
 
 == bld_bottlecap_banner_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
-== bld_hammock_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
-
 == bld_duke_portrait_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_kit_swing_1x1: CLEAN (footprint, loops, part clipping, raccoons at their spots)
@@ -85,3 +83,5 @@
 == kit_ladder_wood + climb_ladder_down: CLEAN (footprint, loops, part clipping, raccoons at their spots)
 
 == bld_shadow_course_2x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)
+
+== bld_hammock_1x2: CLEAN (footprint, loops, part clipping, raccoons at their spots)

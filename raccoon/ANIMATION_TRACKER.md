@@ -120,7 +120,7 @@ Our own decoration models, in the batch style: an `idle` loop, plus `spot_` mark
 | `bld_string_lights_2x1` | ✅ two guyed posts and a sagging wire of seven mismatched stolen lanterns: tin, paper, a glow-worm jar, a ship's lamp, a teapot with a candle | ✅ the lanterns sway, each to its own beat; flames flicker | — | ✅ clean | ⬜ |
 | `bld_mushroom_lamp_1x1` | ✅ a tall pale stalk on a mossy mound, a broad dark cap with a glowing band and glowing spots, little glowing caps round its foot | ✅ the glow swells and fades in turn, spores drift up | — | ✅ clean | ⬜ |
 | `bld_bottlecap_banner_1x1` | ✅ two crooked sticks in stone heaps, two sagging twines of painted bottle caps, bent spoons and a tin star | ✅ the caps swing and twist in a breeze that comes and goes | — | ✅ clean | ⬜ |
-| `bld_hammock_1x2` | ✅ a striped hammock on spreader bars, roped to posts on two stacked crates; a blanket over its side, tassels; a mug and a book under it | ✅ rocks gently | ✅ `spot_sleep` (the base `sleep` clip); the spot rides on the hammock, so the sleeper rocks with it | ✅ clean, with a sleeper | ⬜ |
+| `bld_hammock_1x2` | ✅ a striped hammock on spreader bars, roped to posts standing against two stacked, banded crates; a blanket draped over its side in one piece, tassels; a mug and a book under it. *Retaken 2026-10-30: blanket was loose panels, the upper crates' slats and the rope ends floated, the posts and lashings were buried in the crates* | ✅ rocks gently | ✅ `spot_sleep` (the base `sleep` clip); the spot rides on the hammock, so the sleeper rocks with it | ✅ clean, with a sleeper | ⬜ |
 
 ### Decorations D3: fun. Done, signed off
 

@@ -1,8 +1,9 @@
 """bld_hammock_1x2: a hammock slung between two crates. A decoration, and a resting spot.
 
-Two stacked crates, one at each end, each with a stout post lashed to it. Ropes run from the post tops to spreader
-bars at the hammock's ends; the hammock is a striped cloth, flat in the middle where a raccoon curls up and rising to
-the bars. A blanket hangs over its side, a tassel fringe; under it a mug and a dropped book.
+Two stacked, banded crates at each end, and a stout post standing against their outer side, lashed where the ropes
+tie on. The ropes fan from there to spreader bars at the hammock's ends; the hammock is a striped cloth, flat in the
+middle where a raccoon curls up and rising to the bars. A blanket lies along one edge and drapes over the side (one
+piece, clear of the sleeper), tassels hang from the other edge; under it a mug and a dropped book.
 
 A raccoon can sleep in it: spot_sleep (play the base sleep clip there). The spot is a child of the hammock's moving
 node, `pr_hammock`, so it rocks with it: parent the sleeping raccoon to the spot (or to `pr_hammock`) and it rocks
@@ -35,7 +36,11 @@ V = Vector
 TAU = 2 * math.pi
 NAME = "bld_hammock_1x2"
 FRAMES = 72
-POST_Y, POST_TOP = 0.78, 0.46                    # the posts on the crates, and where the ropes tie on
+POST_Y, POST_TOP = 0.78, 0.46                    # the crates' centres, and the height where the ropes tie on
+CRATE = (0.3, 0.26, 0.18)                        # the lower crate (x, y, z sizes) ...
+CRATE2 = (0.22, 0.2, 0.12, 0.03, 0.03)           # ... and the one stacked on it, its offset (x, outward): back faces flush
+POST_W = 0.05
+POST_OFF = CRATE[1] / 2 + POST_W / 2             # the post stands against the crates' outer faces
 BAR_Y, BAR_Z = 0.42, 0.25                        # the spreader bars
 BED_Z = 0.2                                      # the cloth's flat middle
 FLAT = 0.2                                       # half-length of the flat middle (the sleeper lies there)
@@ -51,18 +56,31 @@ def bed_z(y):
     return BED_Z + (BAR_Z - BED_Z) * t * t
 
 
+def crate(m, c, size, body, top):
+    """A crate: a box with a dark band round it at two heights and corner battens, all flush on its faces."""
+    sx_, sy_, sz_ = size
+    m.obox(c, size, body, top=top)
+    for f in (0.3, 0.75):                                                            # bands, on all four sides
+        z = c.z - sz_ / 2 + sz_ * f
+        m.obox(V((c.x, c.y, z)), (sx_ + 0.006, sy_ + 0.006, 0.018), "wood_dark")
+    for dx in (-1, 1):                                                               # corner battens
+        for dy in (-1, 1):
+            m.obox(V((c.x + dx * (sx_ / 2 - 0.008), c.y + dy * (sy_ / 2 - 0.008), c.z)), (0.02, 0.02, sz_ + 0.002), "wood_dark")
+
+
 def build(coll, rnd):
     m = B.M()
     m.obox(V((0, 0, 0.002)), (0.94, 1.94, 0.004), "wood_weathered")
     for sy in (-1, 1):
         y = sy * POST_Y
-        m.obox(V((0, y, 0.09)), (0.3, 0.26, 0.18), "wood_mid", top="wood_light")                     # crates
-        m.obox(V((0.03, y + sy * 0.02, 0.24)), (0.22, 0.2, 0.12), "wood_light", top="wood_mid")
-        for z in (0.09, 0.24):
-            m.obox(V((0, y - sy * 0.131, z)), (0.3, 0.004, 0.02), "wood_dark")
-        m.obox(V((0, y + sy * 0.09, (POST_TOP + 0.05) / 2)), (0.05, 0.05, POST_TOP + 0.05), "wood_dark")   # post
-        for z in (0.16, 0.28):
-            m.obox(V((0, y + sy * 0.09, z)), (0.06, 0.06, 0.02), "rope")                               # lashings
+        crate(m, V((0, y, CRATE[2] / 2)), CRATE, "wood_mid", "wood_light")
+        w2, d2, h2, ox, oy = CRATE2
+        crate(m, V((ox, y + sy * oy, CRATE[2] + h2 / 2)), (w2, d2, h2), "wood_light", "wood_mid")
+        py = y + sy * POST_OFF                                                       # the post: on the ground, against
+        top_z = POST_TOP + 0.05                                                      # the crates' outer faces
+        m.obox(V((0, py, top_z / 2)), (POST_W, POST_W, top_z), "wood_dark")
+        for z in (CRATE[2] + 0.04, POST_TOP):                                        # lashed above the crates, and
+            m.obox(V((0, py, z)), (POST_W + 0.012, POST_W + 0.012, 0.022), "rope")   # where the ropes tie on
     # under it: a mug and a dropped book
     m.cyl(V((0.2, -0.1, 0.03)), 0.025, 0.05, "wood_mid", segs=8, cap="wood_dark")
     m.obox(V((-0.18, 0.12, 0.012)), (0.1, 0.08, 0.02), "cloth_red", top="cloth_cream", rot=(0, 0, 0.4))
@@ -81,15 +99,13 @@ def build(coll, rnd):
                 sw = ["cloth_red", "cloth_cream", "teal", "cloth_cream"][j]
                 mm.face([grid[k][j], grid[k][j + 1], grid[k + 1][j + 1], grid[k + 1][j]], want, sw)
     hm = B.M()
-    for sy in (-1, 1):
+    tie = POST_Y + POST_OFF - POST_W / 2 - 0.006                                      # the ropes' knot, on the post's
+    for sy in (-1, 1):                                                               # inner face, in its lashing
         by = sy * BAR_Y
         hm.beam(V((-HALF_W - 0.03, by, BAR_Z)), V((HALF_W + 0.03, by, BAR_Z)), 0.02, "wood_mid")      # spreader bar
         for x in (-HALF_W, -HALF_W / 2, 0.0, HALF_W / 2, HALF_W):                                    # suspension ropes
-            hm.beam(V((x, by, BAR_Z)), V((0, sy * (POST_Y - 0.09 + 0.09), POST_TOP)), 0.005, "rope")
-    for k in range(5):                                                                                 # the blanket over
-        y = -0.16 + 0.08 * k                                                                           # its side
-        hm.obox(V((HALF_W + 0.012, y, BED_Z - 0.05)), (0.008, 0.075, 0.11), "cloth_blue" if k % 2 else "sapphire")
-    hm.obox(V((HALF_W - 0.02, 0.0, BED_Z + 0.006)), (0.06, 0.4, 0.006), "cloth_blue")
+            hm.beam(V((x, by, BAR_Z)), V((0, sy * tie, POST_TOP)), 0.005, "rope")
+    blanket(mm)
     cloth = mm.obj("pr_hammock_cloth", coll)
     hamm = hm.obj("pr_hammock", coll)
     cloth.parent = hamm
@@ -97,11 +113,43 @@ def build(coll, rnd):
     cloth.location = -PIVOT                                                                           # stays put in its parent
     for i, y in enumerate((-0.3, -0.1, 0.1, 0.3)):                                                    # tassels on the
         tm = B.M()                                                                                    # other side
-        top = V((-HALF_W - 0.004, y, bed_z(y) - 0.004))
+        top = V((-HALF_W - 0.001, y, bed_z(y) + 0.008))                               # on the cloth's edge
         tm.beam(top, top + V((0, 0, -0.05)), 0.004, "gold_dark")
         tm.blob(top + V((0, 0, -0.06)), V((0.008, 0.008, 0.014)), "gold", 5, 3)
         parts[f"pr_tassel_{i + 1}"] = A.part(tm.obj(f"pr_tassel_{i + 1}", coll), root, top)
     return root, parts
+
+
+def cloth_z(x, y):
+    """The cloth's top surface (it curls up a little at the long edges)."""
+    return bed_z(y) + 0.012 * (abs(x) / HALF_W) ** 4
+
+
+def blanket(mm):
+    """A blanket over the hammock's +X edge: lying along the edge on top (clear of the sleeper), over the edge and
+    hanging down the side, one piece, in bands, with a darker hem."""
+    ys = [-0.18 + 0.36 * k / 8 for k in range(9)]
+    path = [(0.215, 0.003), (0.245, 0.003), (HALF_W + 0.006, 0.0), (HALF_W + 0.012, -0.018), (HALF_W + 0.014, -0.06),
+            (HALF_W + 0.013, -0.1), (HALF_W + 0.012, -0.115)]
+    bands = ["cloth_blue", "cloth_blue", "cloth_blue", "cloth_blue", "cloth_cream", "cloth_blue", "sapphire"]
+    for layer in (0.0, 1.0):                                                        # top face, then the underside
+        rows = []
+        for y in ys:
+            row = []
+            for i, (x, dz) in enumerate(path):
+                z = cloth_z(min(x, HALF_W), y) + dz
+                a, b = path[max(i - 1, 0)], path[min(i + 1, len(path) - 1)]
+                t = V((b[0] - a[0], 0, b[1] - a[1])).normalized()
+                nrm = V((-t.z, 0, t.x))                                              # out of the blanket
+                wave = 0.004 * math.sin(y * 40) * (i >= 4)                          # the hanging part ripples
+                row.append(mm.bm.verts.new(V((x + wave, y, z)) - nrm * 0.004 * layer))
+            rows.append(row)
+        for k in range(len(ys) - 1):
+            for i in range(len(path) - 1):
+                a, b = path[i], path[i + 1]
+                t = V((b[0] - a[0], 0, b[1] - a[1])).normalized()
+                out = V((-t.z, 0, t.x)) * (1 if layer == 0 else -1)
+                mm.face([rows[k][i], rows[k][i + 1], rows[k + 1][i + 1], rows[k + 1][i]], out, bands[i])
 
 
 def rock(p, amp):
